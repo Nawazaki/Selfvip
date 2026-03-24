@@ -16,177 +16,109 @@
 
 <body class="bg-slate-950 font-sans flex flex-col min-h-screen text-slate-200">
 
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950">
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950"></div>
+<header class="bg-slate-900 p-4 flex justify-between items-center sticky top-0 z-50 shadow-2xl border-b border-slate-800">
+  <div class="flex items-center gap-3">
+    <h1 class="text-2xl font-extrabold tracking-tight italic text-white">
+      SelfVIP<span class="text-blue-500">Trading</span>
+    </h1>
+    <span class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-500/30">
+      PRO DASHBOARD
+    </span>
+  </div>
+  <div class="flex items-center gap-4 text-xs font-mono">
+    <span class="text-emerald-400 animate-pulse flex items-center gap-2">
+      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+      AI SYSTEM ACTIVE
+    </span>
+  </div>
+</header>
 
-    <div class="relative w-full max-w-md mx-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-8">
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-extrabold tracking-tight italic text-white">
-          SelfVIP<span class="text-blue-500">Trading</span>
-        </h1>
-        <p class="text-slate-400 text-sm mt-2">Login to access the dashboard</p>
-      </div>
+<main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-6">
 
-      <div class="space-y-4">
+  <aside class="w-full lg:w-1/3 flex flex-col gap-4">
+    
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <span>⚙️</span> Asset Selection
+      </h3>
+      
+      <div class="space-y-3">
         <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Username</label>
-          <input id="loginUser" type="text"
-            class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 transition-all"
-            placeholder="Enter username" />
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Market Type</label>
+          <select id="marketType" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 transition-all">
+            <option value="crypto">Crypto (Binance)</option>
+            <option value="stocks">Stocks (Requires API Key)</option>
+            <option value="forex">Forex/Commodities (Requires API Key)</option>
+          </select>
         </div>
-
+        
         <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
-          <input id="loginPass" type="password"
-            class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 transition-all"
-            placeholder="Enter password" />
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Asset Symbol</label>
+          <input type="text" id="symbolInput" value="BTCUSDT" 
+            class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 uppercase transition-all" 
+            placeholder="e.g. BTCUSDT, AAPL, XAUUSD" />
         </div>
-
-        <button onclick="login()"
-          class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)]">
-          Sign In
-        </button>
-
-        <a id="telegramLoginLink" href="https://t.me/YOUR_CHANNEL" target="_blank"
-          class="block w-full text-center bg-slate-800 hover:bg-slate-700 text-slate-100 py-3 rounded-xl font-bold transition-all border border-slate-700">
-          Open Telegram Channel
-        </a>
-
-        <p class="text-xs text-slate-500 text-center pt-2">
-          Demo login only. Replace credentials in code for your setup.
-        </p>
       </div>
     </div>
-  </div>
 
-  <!-- APP SHELL -->
-  <div id="appShell" class="hidden flex flex-col min-h-screen">
-    <header class="bg-slate-900 p-4 flex justify-between items-center sticky top-0 z-50 shadow-2xl border-b border-slate-800">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-extrabold tracking-tight italic text-white">
-          SelfVIP<span class="text-blue-500">Trading</span>
-        </h1>
-        <span class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-500/30">
-          PRO DASHBOARD
-        </span>
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+        <span>📡</span> Market Data
+      </h3>
+      <p class="text-slate-400 text-xs mb-4">Fetch live data for selected asset</p>
+
+      <button onclick="fetchLivePrice()" id="fetchDataBtn"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] mb-3 text-sm">
+        Get Live Price
+      </button>
+
+      <button onclick="loadOHLCData()" id="loadOhlcBtn"
+        class="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(51,65,85,0.3)] mb-4 text-sm">
+        Load Multi-TF Candles
+      </button>
+
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 text-right">
+        Analysis Context
+      </label>
+
+      <textarea id="marketDataInput" rows="12"
+        class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-300 text-sm font-mono outline-none transition-all resize-none text-left"
+        dir="ltr"
+        placeholder="Live data will appear here..."></textarea>
+
+      <button id="generateBtn" onclick="analyzeMarket()"
+        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white mt-4 py-4 rounded-xl font-black text-lg transition-all shadow-[0_0_20px_rgba(5,150,105,0.4)] flex items-center justify-center gap-3">
+        <span id="btnText">Run AI SMC Analysis</span>
+        <div id="btnLoader" class="hidden h-5 w-5 border-4 border-t-white border-emerald-800 rounded-full animate-spin"></div>
+      </button>
+    </div>
+  </aside>
+
+  <section class="w-full lg:w-2/3">
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl h-full flex flex-col overflow-hidden">
+      <div class="bg-slate-800/50 p-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 class="font-bold text-white">AI Signal Analysis - Full Summary</h2>
+        <span class="text-xs text-slate-400 font-mono" id="timestamp">Waiting for execution...</span>
       </div>
 
-      <div class="flex items-center gap-3 text-xs font-mono">
-        <a href="https://t.me/YOUR_CHANNEL" target="_blank"
-          class="hidden md:inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-100 px-3 py-2 rounded-lg border border-slate-700 transition-all">
-          <span>📣</span> Telegram Channel
-        </a>
-
-        <span class="text-emerald-400 animate-pulse flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-          AI SYSTEM ACTIVE
-        </span>
-
-        <button onclick="logout()"
-          class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-lg font-bold transition-all">
-          Logout
-        </button>
+      <div id="outputDashboard"
+        class="p-6 overflow-y-auto flex-grow bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950 min-h-[500px]">
+        <div class="flex flex-col items-center justify-center h-full text-slate-600 italic gap-4">
+          <svg class="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+            </path>
+          </svg>
+          <p>No analysis has been run yet.</p>
+        </div>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-6">
-
-      <aside class="w-full lg:w-1/3 flex flex-col gap-4">
-
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-          <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <span>⚙️</span> Asset Selection
-          </h3>
-
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Market Type</label>
-              <select id="marketType" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 transition-all">
-                <option value="crypto">Crypto (Binance)</option>
-                <option value="stocks">Stocks (Requires API Key)</option>
-                <option value="forex">Forex/Commodities (Requires API Key)</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Asset Symbol</label>
-              <input type="text" id="symbolInput" value="BTCUSDT"
-                class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 uppercase transition-all"
-                placeholder="e.g. BTCUSDT, AAPL, XAUUSD" />
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-          <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-            <span>📡</span> Market Data
-          </h3>
-          <p class="text-slate-400 text-xs mb-4">Fetch live data for selected asset</p>
-
-          <button onclick="fetchLivePrice()" id="fetchDataBtn"
-            class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] mb-3 text-sm">
-            Get Live Price
-          </button>
-
-          <button onclick="loadOHLCData()" id="loadOhlcBtn"
-            class="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(51,65,85,0.3)] mb-4 text-sm">
-            Load Multi-TF Candles
-          </button>
-
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 text-right">
-            Analysis Context
-          </label>
-
-          <textarea id="marketDataInput" rows="12"
-            class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-300 text-sm font-mono outline-none transition-all resize-none text-left"
-            dir="ltr"
-            placeholder="Live data will appear here..."></textarea>
-
-          <button id="generateBtn" onclick="analyzeMarket()"
-            class="w-full bg-emerald-600 hover:bg-emerald-500 text-white mt-4 py-4 rounded-xl font-black text-lg transition-all shadow-[0_0_20px_rgba(5,150,105,0.4)] flex items-center justify-center gap-3">
-            <span id="btnText">Run AI SMC Analysis</span>
-            <div id="btnLoader" class="hidden h-5 w-5 border-4 border-t-white border-emerald-800 rounded-full animate-spin"></div>
-          </button>
-
-          <a href="https://t.me/YOUR_CHANNEL" target="_blank"
-            class="mt-4 block text-center bg-slate-800 hover:bg-slate-700 text-slate-100 py-3 rounded-xl font-bold transition-all border border-slate-700">
-            Join Telegram Channel
-          </a>
-        </div>
-      </aside>
-
-      <section class="w-full lg:w-2/3">
-        <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl h-full flex flex-col overflow-hidden">
-          <div class="bg-slate-800/50 p-4 border-b border-slate-800 flex justify-between items-center">
-            <h2 class="font-bold text-white">AI Signal Analysis - Full Summary</h2>
-            <span class="text-xs text-slate-400 font-mono" id="timestamp">Waiting for execution...</span>
-          </div>
-
-          <div id="outputDashboard"
-            class="p-6 overflow-y-auto flex-grow bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950 min-h-[500px]">
-            <div class="flex flex-col items-center justify-center h-full text-slate-600 italic gap-4">
-              <svg class="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                </path>
-              </svg>
-              <p>No analysis has been run yet.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
+</main>
 
 <script>
-  // ====== EDIT THESE ======
-  const APP_USER = "admin";
-  const APP_PASS = "1234";
-  const TELEGRAM_URL = "https://t.me/YOUR_CHANNEL";
-  // ========================
-
+  // --- UTILITY FUNCTIONS ---
   function escapeHtml(str) {
     return String(str ?? "")
       .replaceAll("&", "&amp;")
@@ -215,59 +147,7 @@
     }
   }
 
-  // ====== AUTH ======
-  function showApp() {
-    document.getElementById("loginScreen").classList.add("hidden");
-    document.getElementById("appShell").classList.remove("hidden");
-  }
-
-  function showLogin() {
-    document.getElementById("appShell").classList.add("hidden");
-    document.getElementById("loginScreen").classList.remove("hidden");
-  }
-
-  function login() {
-    const u = document.getElementById("loginUser").value.trim();
-    const p = document.getElementById("loginPass").value;
-
-    if (u === APP_USER && p === APP_PASS) {
-      sessionStorage.setItem("selfvip_logged_in", "1");
-      showApp();
-      return;
-    }
-
-    alert("Invalid username or password.");
-  }
-
-  function logout() {
-    sessionStorage.removeItem("selfvip_logged_in");
-    showLogin();
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const telegramLoginLink = document.getElementById("telegramLoginLink");
-    if (telegramLoginLink) telegramLoginLink.href = TELEGRAM_URL;
-
-    if (sessionStorage.getItem("selfvip_logged_in") === "1") {
-      showApp();
-    } else {
-      showLogin();
-    }
-
-    const userInput = document.getElementById("loginUser");
-    const passInput = document.getElementById("loginPass");
-
-    if (userInput && passInput) {
-      passInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") login();
-      });
-      userInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") login();
-      });
-    }
-  });
-
-  // ====== API ROUTING LOGIC ======
+  // --- API ROUTING LOGIC ---
   async function fetchLivePrice() {
     const market = document.getElementById("marketType").value;
     const symbol = document.getElementById("symbolInput").value.toUpperCase();
@@ -283,16 +163,19 @@
       let price = "0.00";
 
       if (market === "crypto") {
+        // Binance API for Crypto
         const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
         if (!res.ok) throw new Error(`Binance Error: Check if symbol ${symbol} is valid.`);
         const data = await res.json();
         price = parseFloat(data.price).toFixed(2);
       } else {
+        // Placeholder for Stocks/Forex (Requires API Keys like Alpha Vantage / Finnhub)
+        // You will need to replace this block with actual API fetch requests later.
         alert(`Note: Real-time API for ${market} requires an API key integration. Using mock data for demonstration.`);
-        price = (Math.random() * 500 + 50).toFixed(2);
+        price = (Math.random() * 500 + 50).toFixed(2); // Mock Price
       }
 
-      input.value =
+      input.value = 
 `[MARKET STATUS]
 Asset: ${symbol} (${market.toUpperCase()})
 Price: $${price}
@@ -322,6 +205,7 @@ Price: $${price}
         low: parseFloat(c[3]), close: parseFloat(c[4]), volume: parseFloat(c[5])
       }));
     } else {
+      // Mock Data for Stocks/Forex until API is integrated
       return Array.from({ length: limit }, () => {
         const base = Math.random() * 200 + 100;
         return {
@@ -344,7 +228,7 @@ Price: $${price}
       high: Math.max(...highs).toFixed(2),
       low: Math.min(...lows).toFixed(2),
       avgClose: (closes.reduce((a, b) => a + b, 0) / closes.length).toFixed(2),
-      candlesText: candles.slice(-5).map((c, i) =>
+      candlesText: candles.slice(-5).map((c, i) => // Sending only last 5 to save context token space
         `C${i + 1}: O:${c.open.toFixed(2)} H:${c.high.toFixed(2)} L:${c.low.toFixed(2)} C:${c.close.toFixed(2)}`
       ).join("\n")
     };
@@ -360,6 +244,7 @@ Price: $${price}
     btn.disabled = true;
 
     try {
+      // Note: Intervals differ between APIs. We map them for Binance here.
       const [m15, h1, h4, d1] = await Promise.all([
         fetchCandles(symbol, market, "15m", 40),
         fetchCandles(symbol, market, "1h", 40),
@@ -372,7 +257,7 @@ Price: $${price}
       const s4h = summarizeCandles(h4);
       const s1d = summarizeCandles(d1);
 
-      input.value =
+      input.value = 
 `[MARKET DATA - ${symbol}]
 Market: ${market.toUpperCase()}
 
@@ -402,10 +287,11 @@ Analyze order blocks, liquidity sweeps, BOS/CHoCH, bias, invalidation, and educa
     }
   }
 
+  // --- AI ANALYSIS LOGIC ---
   async function analyzeMarket() {
     const inputData = document.getElementById("marketDataInput").value.trim();
     const symbol = document.getElementById("symbolInput").value.toUpperCase();
-
+    
     if (!inputData) return alert("Please load market data first.");
 
     const btn = document.getElementById("generateBtn");
@@ -425,6 +311,7 @@ Analyze order blocks, liquidity sweeps, BOS/CHoCH, bias, invalidation, and educa
       </div>
     `;
 
+    // Dynamic Prompt
     const prompt = `
 You are a professional Smart Money Concepts trader.
 
@@ -476,6 +363,7 @@ Return exactly this JSON structure:
     }
   }
 
+  // Passing the symbol dynamically to the dashboard renderer
   function renderDashboard(data, symbol = "Asset") {
     const dashboard = document.getElementById("outputDashboard");
     const biasStatus = safe(data?.bias?.status, "Neutral");
@@ -494,4 +382,53 @@ Return exactly this JSON structure:
       return `
         <div class="p-4 rounded-xl border ${outerClass} backdrop-blur-sm shadow-md transition-all hover:scale-[1.01]">
           <div class="flex justify-between items-start mb-3">
-            <s
+            <span class="text-sm font-mono opacity-80">${escapeHtml(safe(ob.timeframe))}</span>
+            <span class="text-xs font-bold uppercase tracking-wider ${badgeClass} px-2 py-1 rounded-md">${escapeHtml(safe(ob.type))}</span>
+          </div>
+          <h4 class="text-xl font-black font-mono mb-2">${escapeHtml(safe(ob.zone))}</h4>
+          <p class="text-xs opacity-90 leading-relaxed">${escapeHtml(safe(ob.reason))}</p>
+        </div>`;
+    }).join("") || `<div class="text-slate-500 text-sm">No clear order blocks.</div>`;
+
+    dashboard.innerHTML = `
+      <div class="space-y-6 flex flex-col h-full">
+        <div class="text-center mb-2">
+            <h2 class="text-2xl font-black text-white tracking-widest uppercase">${escapeHtml(symbol)} Analysis</h2>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl relative overflow-hidden shadow-lg">
+          <div class="absolute top-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Institutional Bias</h3>
+          <div class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${biasColor} mb-2 text-center">
+            ${escapeHtml(biasStatus)}
+          </div>
+          <div class="text-center text-xs text-slate-400 mb-4">Strength: ${escapeHtml(biasStrength)}</div>
+          <p class="text-sm text-slate-300 text-center"><strong class="text-slate-400">Reason:</strong> ${escapeHtml(safe(data?.bias?.reason))}</p>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Order Blocks</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${obsHtml}</div>
+        </div>
+        
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Educational Trade Plan</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl">
+              <div class="text-slate-400 text-xs mb-1">Entry Zone</div>
+              <div class="text-white font-bold">${escapeHtml(safe(data?.trade_plan?.entry))}</div>
+            </div>
+            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl">
+              <div class="text-slate-400 text-xs mb-1">Take Profit (TP)</div>
+              <div class="text-white font-bold">${escapeHtml(safe(data?.trade_plan?.tp))}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+</script>
+</body>
+  </html>
+  
