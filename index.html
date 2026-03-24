@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="SelfVIP Trading Pro Dashboard — AI-powered Smart Money Concepts analysis for Crypto, Stocks, Forex, and Commodities."/>
+  <title>SelfVIP Trading — Pro Dashboard</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- TradingView Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+
+  <!-- Puter AI (for AI analysis) -->
+  <script src="https://js.puter.com/v2/"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/custom.css" />
+</head>
+
+<body class="text-slate-200 min-h-screen flex flex-col">
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════════════════════ -->
+<header class="sticky top-0 z-50 border-b border-slate-800/80 backdrop-blur-xl"
+        style="background:rgba(6,10,18,0.92)">
+  <div class="max-w-screen-2xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between gap-4">
+
+    <!-- Brand -->
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-[0_0_12px_rgba(37,99,235,0.5)]">
+        <svg class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <h1 class="text-base font-black tracking-tight text-white italic">
+          SelfVIP<span class="text-blue-400">Trading</span>
+        </h1>
+        <span class="hidden sm:block text-[9px] font-bold uppercase tracking-widest text-blue-400/70
+                     bg-blue-600/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
+          PRO
+        </span>
+      </div>
+    </div>
+
+    <!-- Live indicator + market context -->
+    <div class="flex items-center gap-3 text-xs font-mono">
+      <div id="headerPrice" class="hidden sm:flex items-center gap-2 text-slate-400">
+        <!-- populated by JS -->
+      </div>
+      <div class="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
+        <span class="status-dot"></span>
+        <span class="hidden xs:inline">Live</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════════════════════════════════════════ -->
+<main class="flex-grow max-w-screen-2xl mx-auto w-full px-3 md:px-6 py-5 flex flex-col lg:flex-row gap-5">
+
+  <!-- ─────────────────────── LEFT SIDEBAR ─────────────────────────────── -->
+  <aside class="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex flex-col gap-4">
+
+    <!-- Asset Selection -->
+    <div class="panel p-5">
+      <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <span class="text-blue-400">⚙</span> Asset Selection
+      </h3>
+
+      <!-- Market Type -->
+      <div class="mb-3">
+        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">
+          Market
+        </label>
+        <select id="marketType"
+          onchange="onMarketChange()"
+          class="w-full bg-slate-950/60 border border-slate-800 text-slate-200 rounded-lg px-3 py-2.5
+                 text-xs focus:border-blue-500/50 transition-all cursor-pointer">
+          <option value="crypto">🔶 Crypto (Binance — Free)</option>
+          <option value="stocks">📈 Stocks (Twelve Data)</option>
+          <option value="forex">💱 Forex (Twelve Data)</option>
+          <option value="commodities">🏅 Commodities (Twelve Data)</option>
+        </select>
+      </div>
+
+      <!-- Symbol Input -->
+      <div class="mb-3">
+        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">
+          Symbol
+        </label>
+        <input type="text" id="symbolInput" value="BTCUSDT"
+          class="w-full bg-slate-950/60 border border-slate-800 text-white rounded-lg px-3 py-2.5
+                 text-xs uppercase placeholder-slate-700 transition-all"
+          placeholder="e.g. BTCUSDT · AAPL · EUR/USD · XAU/USD"
+          autocomplete="off"
+          oninput="this.value = this.value.toUpperCase()"
+        />
+      </div>
+
+      <!-- Quick Symbol Pills -->
+      <div id="symbolPills" class="flex flex-wrap gap-1.5 mt-2">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Data Controls -->
+    <div class="panel p-5">
+      <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+        <span class="text-blue-400">📡</span> Market Data
+      </h3>
+      <p class="text-[10px] text-slate-700 mb-4">Fetch live prices and multi-timeframe candles</p>
+
+      <button id="fetchPriceBtn" onclick="handleFetchPrice()"
+        class="btn-primary w-full text-white py-2.5 rounded-xl font-bold text-xs mb-2 flex items-center justify-center gap-2">
+        <span>Get Live Price</span>
+      </button>
+
+      <button id="loadCandlesBtn" onclick="handleLoadCandles()"
+        class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl font-bold text-xs
+               transition-all mb-4 flex items-center justify-center gap-2">
+        <span>Load Multi-TF Candles</span>
+      </button>
+
+      <!-- Chart TF tabs -->
+      <div id="tfTabs" class="hidden flex gap-1 mb-3 bg-slate-900/60 rounded-lg p-1">
+        <button class="tf-tab active" onclick="switchChart('M15')">M15</button>
+        <button class="tf-tab"        onclick="switchChart('H1')">H1</button>
+        <button class="tf-tab"        onclick="switchChart('H4')">H4</button>
+        <button class="tf-tab"        onclick="switchChart('D1')">D1</button>
+      </div>
+
+      <!-- Chart -->
+      <div id="chartContainer" class="rounded-xl overflow-hidden border border-slate-800/50 mb-4">
+        <div class="flex items-center justify-center h-full text-slate-700 text-xs italic">
+          Load candles to view chart
+        </div>
+      </div>
+
+      <!-- Context Preview (collapsible) -->
+      <details class="group">
+        <summary class="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer
+                        select-none hover:text-slate-400 transition-colors flex items-center gap-1.5 mb-2">
+          <span class="group-open:rotate-90 transition-transform inline-block">›</span>
+          AI Context Preview
+        </summary>
+        <textarea id="marketDataInput" rows="10"
+          class="w-full p-3 bg-slate-950/80 border border-slate-800/60 rounded-xl text-slate-500
+                 text-[10px] font-mono outline-none resize-none leading-relaxed"
+          dir="ltr" placeholder="Context sent to AI will appear here..."></textarea>
+      </details>
+    </div>
+
+    <!-- Run Analysis Button -->
+    <button id="generateBtn" onclick="handleAnalyze()"
+      class="btn-success w-full text-white py-4 rounded-xl font-black text-sm
+             flex items-center justify-center gap-3 shadow-lg">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+          d="M13 10V3L4 14h7v7l9-11h-7z"/>
+      </svg>
+      <span id="btnText">Run AI SMC Analysis</span>
+      <div id="btnLoader" class="hidden h-4 w-4 border-[3px] border-t-white border-emerald-800 rounded-full animate-spin"></div>
+    </button>
+
+    <!-- API Key Warning (shown when keys missing) -->
+    <div id="apiKeyWarning" class="hidden panel p-4 border-amber-500/20 bg-amber-900/5">
+      <div class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">⚠ API Key Required</div>
+      <p class="text-[10px] text-slate-500 leading-relaxed">
+        Stocks, Forex and Commodities require a <strong class="text-slate-400">Twelve Data</strong> API key.
+        Open <code class="text-blue-400 bg-blue-950/50 px-1 rounded">js/config.js</code> and paste your key.
+        <a href="https://twelvedata.com" target="_blank" rel="noopener"
+           class="text-blue-400 hover:underline ml-1">Get free key →</a>
+      </p>
+    </div>
+
+  </aside>
+
+
+  <!-- ─────────────────────── RIGHT PANEL ──────────────────────────────── -->
+  <section class="flex-grow min-w-0 flex flex-col gap-4">
+
+    <!-- Price Ticker -->
+    <div class="panel p-4">
+      <div id="priceTicker">
+        <div class="text-slate-700 text-xs italic">Select an asset and fetch live price</div>
+      </div>
+    </div>
+
+    <!-- Analysis Output -->
+    <div class="panel flex flex-col flex-grow overflow-hidden" style="min-height:400px">
+      <div class="px-5 py-3 border-b border-slate-800/60 flex justify-between items-center">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Signal Analysis</h2>
+        <span class="text-[10px] text-slate-600 font-mono" id="timestamp">—</span>
+      </div>
+      <div id="outputDashboard" class="p-5 overflow-y-auto flex-grow">
+        <!-- Idle state rendered by JS -->
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════════════════════ -->
+<footer class="border-t border-slate-800/50 py-4 text-center">
+  <p class="text-[10px] text-slate-700">
+    SelfVIP Trading · Educational purposes only · Not financial advice ·
+    Data: Binance &amp; Twelve Data
+  </p>
+</footer>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SCRIPTS (order matters)
+══════════════════════════════════════════════════════════════════════════ -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/analysis.js"></script>
+<script src="js/render.js"></script>
+
+<script>
+// ─── Application State ─────────────────────────────────────────────────────
+const State = {
+  candlesByTF:  {},    // { M15: [...], H1: [...], ... }
+  priceInfo:    null,  // live price data object
+  symbol:       "BTCUSDT",
+  market:       "crypto",
+  activeTF:     "M15",
+  busy:         false,
+};
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  Renderer.showIdle();
+  renderSymbolPills("crypto");
+  checkApiKeyWarning();
+});
+
+// ─── Market Type Change ────────────────────────────────────────────────────
+function onMarketChange() {
+  const market = document.getElementById("marketType").value;
+  State.market = market;
+  renderSymbolPills(market);
+  checkApiKeyWarning();
+
+  // Set a sensible default symbol per market
+  const defaults = {
+    crypto:      "BTCUSDT",
+    stocks:      "AAPL",
+    forex:       "EUR/USD",
+    commodities: "XAU/USD",
+  };
+  document.getElementById("symbolInput").value = defaults[market] ?? "BTCUSDT";
+}
+
+function renderSymbolPills(market) {
+  const container = document.getElementById("symbolPills");
+  const syms = SYMBOL_SUGGESTIONS[market] ?? [];
+  container.innerHTML = syms.map((s) =>
+    `<button class="symbol-pill" onclick="selectSymbol('${s}')">${s}</button>`
+  ).join("");
+}
+
+function selectSymbol(sym) {
+  document.getElementById("symbolInput").value = sym;
+  State.symbol = sym;
+}
+
+function checkApiKeyWarning() {
+  const market  = document.getElementById("marketType").value;
+  const warning = document.getElementById("apiKeyWarning");
+  const needsKey = market !== "crypto";
+  const keyMissing = !CONFIG.TWELVE_DATA_API_KEY || CONFIG.TWELVE_DATA_API_KEY.includes("YOUR_");
+  warning.classList.toggle("hidden", !(needsKey && keyMissing));
+}
+
+// ─── Set busy state ────────────────────────────────────────────────────────
+function setBusy(busy, context = "main") {
+  State.busy = busy;
+  const btn     = document.getElementById("generateBtn");
+  const btnText = document.getElementById("btnText");
+  const loader  = document.getElementById("btnLoader");
+
+  if (busy) {
+    btn.disabled = true;
+    btnText.innerText = "Processing...";
+    loader.classList.remove("hidden");
+  } else {
+    btn.disabled = false;
+    btnText.innerText = "Run AI SMC Analysis";
+    loader.classList.add("hidden");
+  }
+
+  // Also disable fetch buttons when busy
+  ["fetchPriceBtn","loadCandlesBtn"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = busy;
+  });
+}
+
+// ─── Fetch Live Price ──────────────────────────────────────────────────────
+async function handleFetchPrice() {
+  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
+  const market = document.getElementById("marketType").value;
+  if (!symbol) { Utils.toast("Please enter a symbol.", "warn"); return; }
+
+  State.symbol = symbol;
+  State.market = market;
+
+  const btn = document.getElementById("fetchPriceBtn");
+  btn.disabled = true;
+  btn.querySelector("span").innerText = "Fetching...";
+
+  try {
+    const priceInfo = await API.getLivePrice(symbol, market);
+    State.priceInfo = priceInfo;
+
+    Renderer.renderPriceTicker(symbol, priceInfo);
+
+    // Update header price
+    const hp = document.getElementById("headerPrice");
+    hp.classList.remove("hidden");
+    hp.innerHTML = `
+      <span class="text-slate-600">${Utils.escapeHtml(symbol)}</span>
+      <span class="text-white font-bold">$${Utils.formatPrice(priceInfo.price)}</span>
+      <span class="${Utils.changeColor(priceInfo.changePct)}">
+        ${priceInfo.changePct >= 0 ? "+" : ""}${(priceInfo.changePct ?? 0).toFixed(2)}%
+      </span>
+    `;
+
+    // Pre-fill AI context
+    document.getElementById("marketDataInput").value =
+      `[LIVE PRICE]\nSymbol: ${symbol}\nPrice:  $${Utils.formatPrice(priceInfo.price)}\nChange: ${priceInfo.changePct >= 0 ? "+" : ""}${(priceInfo.changePct ?? 0).toFixed(2)}%\n\n[PENDING] Load candles for full analysis.`;
+
+    Utils.toast(`${symbol} price fetched successfully.`, "success");
+    document.getElementById("timestamp").innerText = `Price @ ${Utils.nowStamp()}`;
+  } catch (err) {
+    console.error(err);
+    Utils.toast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.querySelector("span").innerText = "Get Live Price";
+  }
+}
+
+// ─── Load OHLCV Candles ────────────────────────────────────────────────────
+async function handleLoadCandles() {
+  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
+  const market = document.getElementById("marketType").value;
+  if (!symbol) { Utils.toast("Please enter a symbol.", "warn"); return; }
+
+  State.symbol = symbol;
+  State.market = market;
+
+  const btn = document.getElementById("loadCandlesBtn");
+  btn.disabled = true;
+  btn.querySelector("span").innerText = "Loading...";
+
+  try {
+    // Fetch price + all timeframes in parallel
+    const [priceInfo, candlesByTF] = await Promise.all([
+      API.getLivePrice(symbol, market),
+      API.getAllTimeframes(symbol, market),
+    ]);
+
+    State.priceInfo   = priceInfo;
+    State.candlesByTF = candlesByTF;
+
+    // Count successful timeframes
+    const loaded = Object.values(candlesByTF).filter(Boolean).length;
+    if (loaded === 0) throw new Error("No candle data returned. Check symbol and API key.");
+
+    // Update price ticker
+    Renderer.renderPriceTicker(symbol, priceInfo);
+
+    // Show TF tab bar + draw chart
+    document.getElementById("tfTabs").classList.remove("hidden");
+    drawChart(State.activeTF);
+
+    // Build AI context text
+    const summaries = ["M15","H1","H4","D1"].map((tf) => {
+      const candles = candlesByTF[tf];
+      return candles ? Utils.summarizeCandles(candles, tf, CONFIG.AI_CANDLE_CONTEXT) : null;
+    });
+    const livePriceStr = `$${Utils.formatPrice(priceInfo.price)}`;
+    document.getElementById("marketDataInput").value =
+      Utils.buildMarketContext(symbol, market, summaries, livePriceStr);
+
+    document.getElementById("timestamp").innerText = `Candles @ ${Utils.nowStamp()}`;
+    Utils.toast(`${symbol} — ${loaded}/4 timeframes loaded.`, loaded === 4 ? "success" : "warn");
+  } catch (err) {
+    console.error(err);
+    Utils.toast(err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.querySelector("span").innerText = "Load Multi-TF Candles";
+  }
+}
+
+// ─── Draw / Switch Chart ───────────────────────────────────────────────────
+function drawChart(tf) {
+  State.activeTF = tf;
+  const candles = State.candlesByTF[tf];
+
+  // Update tab styles
+  document.querySelectorAll(".tf-tab").forEach((t) => {
+    t.classList.toggle("active", t.innerText === tf);
+  });
+
+  if (candles && candles.length > 0) {
+    Renderer.renderChart(candles, State.symbol, tf);
+  } else {
+    const container = document.getElementById("chartContainer");
+    container.innerHTML = `<div class="flex items-center justify-center h-full text-slate-700 text-xs italic">
+      No ${tf} data available
+    </div>`;
+  }
+}
+
+function switchChart(tf) {
+  drawChart(tf);
+}
+
+// ─── Run AI Analysis ───────────────────────────────────────────────────────
+async function handleAnalyze() {
+  if (State.busy) return;
+
+  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
+  const market = document.getElementById("marketType").value;
+
+  if (!symbol) { Utils.toast("Please enter a symbol.", "warn"); return; }
+
+  // Require either price or candle data
+  const hasCandles = Object.values(State.candlesByTF).some(Boolean);
+  const hasContext = document.getElementById("marketDataInput").value.trim().length > 30;
+
+  if (!hasCandles && !hasContext) {
+    Utils.toast("Please load market data first (price or candles).", "warn");
+    return;
+  }
+
+  State.symbol = symbol;
+  State.market = market;
+
+  setBusy(true);
+  Renderer.showLoading(`Analyzing ${symbol} with SMC framework...`);
+
+  try {
+    // If no candles yet but we have price, try to fetch candles silently
+    if (!hasCandles && State.priceInfo) {
+      const candlesByTF = await API.getAllTimeframes(symbol, market).catch(() => ({}));
+      Object.assign(State.candlesByTF, candlesByTF);
+    }
+
+    // Ensure price info exists
+    let priceInfo = State.priceInfo;
+    if (!priceInfo) {
+      priceInfo = await API.getLivePrice(symbol, market);
+      State.priceInfo = priceInfo;
+      Renderer.renderPriceTicker(symbol, priceInfo);
+    }
+
+    const { aiData } = await Analysis.runAnalysis(
+      symbol, market, State.candlesByTF, priceInfo
+    );
+
+    Renderer.renderAnalysis(aiData, symbol, priceInfo);
+    document.getElementById("timestamp").innerText = `Analysis @ ${Utils.nowStamp()}`;
+    Utils.toast("Analysis complete.", "success");
+  } catch (err) {
+    console.error(err);
+    Renderer.showError(err.message);
+    Utils.toast("Analysis failed. See output panel.", "error");
+  } finally {
+    setBusy(false);
+  }
+}
+</script>
+
+</body>
+</html>
