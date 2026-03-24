@@ -3,490 +3,431 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="SelfVIP Trading Pro Dashboard — AI-powered Smart Money Concepts analysis for Crypto, Stocks, Forex, and Commodities."/>
-  <title>SelfVIP Trading — Pro Dashboard</title>
-
-  <!-- Tailwind CSS -->
+  <title>SelfVIP Trading - Multi-Market Pro Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- TradingView Lightweight Charts -->
-  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-
-  <!-- Puter AI (for AI analysis) -->
   <script src="https://js.puter.com/v2/"></script>
-
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="css/custom.css" />
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
 </head>
 
-<body class="text-slate-200 min-h-screen flex flex-col">
+<body class="bg-slate-950 font-sans flex flex-col min-h-screen text-slate-200">
 
-<!-- ══════════════════════════════════════════════════════════════════════════
-     HEADER
-══════════════════════════════════════════════════════════════════════════ -->
-<header class="sticky top-0 z-50 border-b border-slate-800/80 backdrop-blur-xl"
-        style="background:rgba(6,10,18,0.92)">
-  <div class="max-w-screen-2xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between gap-4">
-
-    <!-- Brand -->
-    <div class="flex items-center gap-3 shrink-0">
-      <div class="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-[0_0_12px_rgba(37,99,235,0.5)]">
-        <svg class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
-        </svg>
-      </div>
-      <div class="flex items-baseline gap-2">
-        <h1 class="text-base font-black tracking-tight text-white italic">
-          SelfVIP<span class="text-blue-400">Trading</span>
-        </h1>
-        <span class="hidden sm:block text-[9px] font-bold uppercase tracking-widest text-blue-400/70
-                     bg-blue-600/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
-          PRO
-        </span>
-      </div>
-    </div>
-
-    <!-- Live indicator + market context -->
-    <div class="flex items-center gap-3 text-xs font-mono">
-      <div id="headerPrice" class="hidden sm:flex items-center gap-2 text-slate-400">
-        <!-- populated by JS -->
-      </div>
-      <div class="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
-        <span class="status-dot"></span>
-        <span class="hidden xs:inline">Live</span>
-      </div>
-    </div>
+<header class="bg-slate-900 p-4 flex justify-between items-center sticky top-0 z-50 shadow-2xl border-b border-slate-800">
+  <div class="flex items-center gap-3">
+    <h1 class="text-2xl font-extrabold tracking-tight italic text-white">
+      SelfVIP<span class="text-blue-500">Trading</span>
+    </h1>
+    <span class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-500/30">
+      PRO DASHBOARD
+    </span>
+  </div>
+  <div class="flex items-center gap-4 text-xs font-mono">
+    <span class="text-emerald-400 animate-pulse flex items-center gap-2">
+      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+      AI SYSTEM ACTIVE
+    </span>
   </div>
 </header>
 
+<main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-6">
 
-<!-- ══════════════════════════════════════════════════════════════════════════
-     MAIN LAYOUT
-══════════════════════════════════════════════════════════════════════════ -->
-<main class="flex-grow max-w-screen-2xl mx-auto w-full px-3 md:px-6 py-5 flex flex-col lg:flex-row gap-5">
-
-  <!-- ─────────────────────── LEFT SIDEBAR ─────────────────────────────── -->
-  <aside class="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex flex-col gap-4">
-
-    <!-- Asset Selection -->
-    <div class="panel p-5">
-      <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-        <span class="text-blue-400">⚙</span> Asset Selection
+  <aside class="w-full lg:w-1/3 flex flex-col gap-4">
+    
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <span>⚙️</span> Asset Selection
       </h3>
-
-      <!-- Market Type -->
-      <div class="mb-3">
-        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">
-          Market
-        </label>
-        <select id="marketType"
-          onchange="onMarketChange()"
-          class="w-full bg-slate-950/60 border border-slate-800 text-slate-200 rounded-lg px-3 py-2.5
-                 text-xs focus:border-blue-500/50 transition-all cursor-pointer">
-          <option value="crypto">🔶 Crypto (Binance — Free)</option>
-          <option value="stocks">📈 Stocks (Twelve Data)</option>
-          <option value="forex">💱 Forex (Twelve Data)</option>
-          <option value="commodities">🏅 Commodities (Twelve Data)</option>
-        </select>
-      </div>
-
-      <!-- Symbol Input -->
-      <div class="mb-3">
-        <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">
-          Symbol
-        </label>
-        <input type="text" id="symbolInput" value="BTCUSDT"
-          class="w-full bg-slate-950/60 border border-slate-800 text-white rounded-lg px-3 py-2.5
-                 text-xs uppercase placeholder-slate-700 transition-all"
-          placeholder="e.g. BTCUSDT · AAPL · EUR/USD · XAU/USD"
-          autocomplete="off"
-          oninput="this.value = this.value.toUpperCase()"
-        />
-      </div>
-
-      <!-- Quick Symbol Pills -->
-      <div id="symbolPills" class="flex flex-wrap gap-1.5 mt-2">
-        <!-- Populated by JS -->
-      </div>
-    </div>
-
-    <!-- Data Controls -->
-    <div class="panel p-5">
-      <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-2">
-        <span class="text-blue-400">📡</span> Market Data
-      </h3>
-      <p class="text-[10px] text-slate-700 mb-4">Fetch live prices and multi-timeframe candles</p>
-
-      <button id="fetchPriceBtn" onclick="handleFetchPrice()"
-        class="btn-primary w-full text-white py-2.5 rounded-xl font-bold text-xs mb-2 flex items-center justify-center gap-2">
-        <span>Get Live Price</span>
-      </button>
-
-      <button id="loadCandlesBtn" onclick="handleLoadCandles()"
-        class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl font-bold text-xs
-               transition-all mb-4 flex items-center justify-center gap-2">
-        <span>Load Multi-TF Candles</span>
-      </button>
-
-      <!-- Chart TF tabs -->
-      <div id="tfTabs" class="hidden flex gap-1 mb-3 bg-slate-900/60 rounded-lg p-1">
-        <button class="tf-tab active" onclick="switchChart('M15')">M15</button>
-        <button class="tf-tab"        onclick="switchChart('H1')">H1</button>
-        <button class="tf-tab"        onclick="switchChart('H4')">H4</button>
-        <button class="tf-tab"        onclick="switchChart('D1')">D1</button>
-      </div>
-
-      <!-- Chart -->
-      <div id="chartContainer" class="rounded-xl overflow-hidden border border-slate-800/50 mb-4">
-        <div class="flex items-center justify-center h-full text-slate-700 text-xs italic">
-          Load candles to view chart
+      
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Market Type</label>
+          <select id="marketType" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 transition-all">
+            <option value="crypto">Crypto (Binance)</option>
+            <option value="stocks">Stocks (Requires API Key)</option>
+            <option value="forex">Forex/Commodities (Requires API Key)</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Asset Symbol</label>
+          <input type="text" id="symbolInput" value="BTCUSDT" 
+            class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 uppercase transition-all" 
+            placeholder="e.g. BTCUSDT, AAPL, XAUUSD" />
         </div>
       </div>
-
-      <!-- Context Preview (collapsible) -->
-      <details class="group">
-        <summary class="text-[10px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer
-                        select-none hover:text-slate-400 transition-colors flex items-center gap-1.5 mb-2">
-          <span class="group-open:rotate-90 transition-transform inline-block">›</span>
-          AI Context Preview
-        </summary>
-        <textarea id="marketDataInput" rows="10"
-          class="w-full p-3 bg-slate-950/80 border border-slate-800/60 rounded-xl text-slate-500
-                 text-[10px] font-mono outline-none resize-none leading-relaxed"
-          dir="ltr" placeholder="Context sent to AI will appear here..."></textarea>
-      </details>
     </div>
 
-    <!-- Run Analysis Button -->
-    <button id="generateBtn" onclick="handleAnalyze()"
-      class="btn-success w-full text-white py-4 rounded-xl font-black text-sm
-             flex items-center justify-center gap-3 shadow-lg">
-      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-          d="M13 10V3L4 14h7v7l9-11h-7z"/>
-      </svg>
-      <span id="btnText">Run AI SMC Analysis</span>
-      <div id="btnLoader" class="hidden h-4 w-4 border-[3px] border-t-white border-emerald-800 rounded-full animate-spin"></div>
-    </button>
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+        <span>📡</span> Market Data
+      </h3>
+      <p class="text-slate-400 text-xs mb-4">Fetch live data for selected asset</p>
 
-    <!-- API Key Warning (shown when keys missing) -->
-    <div id="apiKeyWarning" class="hidden panel p-4 border-amber-500/20 bg-amber-900/5">
-      <div class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">⚠ API Key Required</div>
-      <p class="text-[10px] text-slate-500 leading-relaxed">
-        Stocks, Forex and Commodities require a <strong class="text-slate-400">Twelve Data</strong> API key.
-        Open <code class="text-blue-400 bg-blue-950/50 px-1 rounded">js/config.js</code> and paste your key.
-        <a href="https://twelvedata.com" target="_blank" rel="noopener"
-           class="text-blue-400 hover:underline ml-1">Get free key →</a>
-      </p>
+      <button onclick="fetchLivePrice()" id="fetchDataBtn"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] mb-3 text-sm">
+        Get Live Price
+      </button>
+
+      <button onclick="loadOHLCData()" id="loadOhlcBtn"
+        class="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(51,65,85,0.3)] mb-4 text-sm">
+        Load Multi-TF Candles
+      </button>
+
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 text-right">
+        Analysis Context
+      </label>
+
+      <textarea id="marketDataInput" rows="12"
+        class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 text-slate-300 text-sm font-mono outline-none transition-all resize-none text-left"
+        dir="ltr"
+        placeholder="Live data will appear here..."></textarea>
+
+      <button id="generateBtn" onclick="analyzeMarket()"
+        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white mt-4 py-4 rounded-xl font-black text-lg transition-all shadow-[0_0_20px_rgba(5,150,105,0.4)] flex items-center justify-center gap-3">
+        <span id="btnText">Run AI SMC Analysis</span>
+        <div id="btnLoader" class="hidden h-5 w-5 border-4 border-t-white border-emerald-800 rounded-full animate-spin"></div>
+      </button>
     </div>
-
   </aside>
 
+  <section class="w-full lg:w-2/3">
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl h-full flex flex-col overflow-hidden">
+      <div class="bg-slate-800/50 p-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 class="font-bold text-white">AI Signal Analysis - Full Summary</h2>
+        <span class="text-xs text-slate-400 font-mono" id="timestamp">Waiting for execution...</span>
+      </div>
 
-  <!-- ─────────────────────── RIGHT PANEL ──────────────────────────────── -->
-  <section class="flex-grow min-w-0 flex flex-col gap-4">
-
-    <!-- Price Ticker -->
-    <div class="panel p-4">
-      <div id="priceTicker">
-        <div class="text-slate-700 text-xs italic">Select an asset and fetch live price</div>
+      <div id="outputDashboard"
+        class="p-6 overflow-y-auto flex-grow bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950 min-h-[500px]">
+        <div class="flex flex-col items-center justify-center h-full text-slate-600 italic gap-4">
+          <svg class="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+            </path>
+          </svg>
+          <p>No analysis has been run yet.</p>
+        </div>
       </div>
     </div>
-
-    <!-- Analysis Output -->
-    <div class="panel flex flex-col flex-grow overflow-hidden" style="min-height:400px">
-      <div class="px-5 py-3 border-b border-slate-800/60 flex justify-between items-center">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Signal Analysis</h2>
-        <span class="text-[10px] text-slate-600 font-mono" id="timestamp">—</span>
-      </div>
-      <div id="outputDashboard" class="p-5 overflow-y-auto flex-grow">
-        <!-- Idle state rendered by JS -->
-      </div>
-    </div>
-
   </section>
 
 </main>
 
-
-<!-- ══════════════════════════════════════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════════════════════════════════════ -->
-<footer class="border-t border-slate-800/50 py-4 text-center">
-  <p class="text-[10px] text-slate-700">
-    SelfVIP Trading · Educational purposes only · Not financial advice ·
-    Data: Binance &amp; Twelve Data
-  </p>
-</footer>
-
-
-<!-- ══════════════════════════════════════════════════════════════════════════
-     SCRIPTS (order matters)
-══════════════════════════════════════════════════════════════════════════ -->
-<script src="js/config.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/api.js"></script>
-<script src="js/analysis.js"></script>
-<script src="js/render.js"></script>
-
 <script>
-// ─── Application State ─────────────────────────────────────────────────────
-const State = {
-  candlesByTF:  {},    // { M15: [...], H1: [...], ... }
-  priceInfo:    null,  // live price data object
-  symbol:       "BTCUSDT",
-  market:       "crypto",
-  activeTF:     "M15",
-  busy:         false,
-};
+  // --- UTILITY FUNCTIONS ---
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
 
-// ─── Init ──────────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-  Renderer.showIdle();
-  renderSymbolPills("crypto");
-  checkApiKeyWarning();
-});
+  function nowStamp() {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+  }
 
-// ─── Market Type Change ────────────────────────────────────────────────────
-function onMarketChange() {
-  const market = document.getElementById("marketType").value;
-  State.market = market;
-  renderSymbolPills(market);
-  checkApiKeyWarning();
+  function safe(v, fallback = "N/A") {
+    return (v === null || v === undefined || v === "") ? fallback : v;
+  }
 
-  // Set a sensible default symbol per market
-  const defaults = {
-    crypto:      "BTCUSDT",
-    stocks:      "AAPL",
-    forex:       "EUR/USD",
-    commodities: "XAU/USD",
-  };
-  document.getElementById("symbolInput").value = defaults[market] ?? "BTCUSDT";
-}
+  function extractJson(text) {
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      const match = String(text).trim().match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("AI did not return valid JSON format.");
+      return JSON.parse(match[0]);
+    }
+  }
 
-function renderSymbolPills(market) {
-  const container = document.getElementById("symbolPills");
-  const syms = SYMBOL_SUGGESTIONS[market] ?? [];
-  container.innerHTML = syms.map((s) =>
-    `<button class="symbol-pill" onclick="selectSymbol('${s}')">${s}</button>`
-  ).join("");
-}
+  // --- API ROUTING LOGIC ---
+  async function fetchLivePrice() {
+    const market = document.getElementById("marketType").value;
+    const symbol = document.getElementById("symbolInput").value.toUpperCase();
+    const btn = document.getElementById("fetchDataBtn");
+    const input = document.getElementById("marketDataInput");
 
-function selectSymbol(sym) {
-  document.getElementById("symbolInput").value = sym;
-  State.symbol = sym;
-}
+    if (!symbol) return alert("Please enter a symbol.");
 
-function checkApiKeyWarning() {
-  const market  = document.getElementById("marketType").value;
-  const warning = document.getElementById("apiKeyWarning");
-  const needsKey = market !== "crypto";
-  const keyMissing = !CONFIG.TWELVE_DATA_API_KEY || CONFIG.TWELVE_DATA_API_KEY.includes("YOUR_");
-  warning.classList.toggle("hidden", !(needsKey && keyMissing));
-}
+    btn.innerText = "Fetching...";
+    btn.disabled = true;
 
-// ─── Set busy state ────────────────────────────────────────────────────────
-function setBusy(busy, context = "main") {
-  State.busy = busy;
-  const btn     = document.getElementById("generateBtn");
-  const btnText = document.getElementById("btnText");
-  const loader  = document.getElementById("btnLoader");
+    try {
+      let price = "0.00";
 
-  if (busy) {
+      if (market === "crypto") {
+        // Binance API for Crypto
+        const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+        if (!res.ok) throw new Error(`Binance Error: Check if symbol ${symbol} is valid.`);
+        const data = await res.json();
+        price = parseFloat(data.price).toFixed(2);
+      } else {
+        // Placeholder for Stocks/Forex (Requires API Keys like Alpha Vantage / Finnhub)
+        // You will need to replace this block with actual API fetch requests later.
+        alert(`Note: Real-time API for ${market} requires an API key integration. Using mock data for demonstration.`);
+        price = (Math.random() * 500 + 50).toFixed(2); // Mock Price
+      }
+
+      input.value = 
+`[MARKET STATUS]
+Asset: ${symbol} (${market.toUpperCase()})
+Price: $${price}
+
+[ANALYSIS REQUEST]
+1. Identify Order Blocks (OB)
+2. Scan for Liquidity Grabs (BOS/CHOCH)
+3. Determine Institutional Bias.`;
+    } catch (e) {
+      alert(e.message);
+      console.error(e);
+    } finally {
+      btn.innerText = "Get Live Price";
+      btn.disabled = false;
+    }
+  }
+
+  async function fetchCandles(symbol, market, interval, limit = 50) {
+    if (market === "crypto") {
+      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Binance HTTP ${res.status}`);
+      const data = await res.json();
+
+      return data.map(c => ({
+        open: parseFloat(c[1]), high: parseFloat(c[2]),
+        low: parseFloat(c[3]), close: parseFloat(c[4]), volume: parseFloat(c[5])
+      }));
+    } else {
+      // Mock Data for Stocks/Forex until API is integrated
+      return Array.from({ length: limit }, () => {
+        const base = Math.random() * 200 + 100;
+        return {
+          open: base, high: base + Math.random() * 5,
+          low: base - Math.random() * 5, close: base + (Math.random() * 4 - 2),
+          volume: Math.floor(Math.random() * 10000)
+        };
+      });
+    }
+  }
+
+  function summarizeCandles(candles) {
+    const last = candles[candles.length - 1];
+    const highs = candles.map(c => c.high);
+    const lows = candles.map(c => c.low);
+    const closes = candles.map(c => c.close);
+
+    return {
+      lastClose: last.close.toFixed(2),
+      high: Math.max(...highs).toFixed(2),
+      low: Math.min(...lows).toFixed(2),
+      avgClose: (closes.reduce((a, b) => a + b, 0) / closes.length).toFixed(2),
+      candlesText: candles.slice(-5).map((c, i) => // Sending only last 5 to save context token space
+        `C${i + 1}: O:${c.open.toFixed(2)} H:${c.high.toFixed(2)} L:${c.low.toFixed(2)} C:${c.close.toFixed(2)}`
+      ).join("\n")
+    };
+  }
+
+  async function loadOHLCData() {
+    const market = document.getElementById("marketType").value;
+    const symbol = document.getElementById("symbolInput").value.toUpperCase();
+    const btn = document.getElementById("loadOhlcBtn");
+    const input = document.getElementById("marketDataInput");
+
+    btn.innerText = "Loading...";
+    btn.disabled = true;
+
+    try {
+      // Note: Intervals differ between APIs. We map them for Binance here.
+      const [m15, h1, h4, d1] = await Promise.all([
+        fetchCandles(symbol, market, "15m", 40),
+        fetchCandles(symbol, market, "1h", 40),
+        fetchCandles(symbol, market, "4h", 40),
+        fetchCandles(symbol, market, "1d", 40)
+      ]);
+
+      const s15 = summarizeCandles(m15);
+      const s1h = summarizeCandles(h1);
+      const s4h = summarizeCandles(h4);
+      const s1d = summarizeCandles(d1);
+
+      input.value = 
+`[MARKET DATA - ${symbol}]
+Market: ${market.toUpperCase()}
+
+[M15]
+Last Close: ${s15.lastClose} | High: ${s15.high} | Low: ${s15.low} | Avg Close: ${s15.avgClose}
+${s15.candlesText}
+
+[H1]
+Last Close: ${s1h.lastClose} | High: ${s1h.high} | Low: ${s1h.low} | Avg Close: ${s1h.avgClose}
+${s1h.candlesText}
+
+[H4]
+Last Close: ${s4h.lastClose} | High: ${s4h.high} | Low: ${s4h.low} | Avg Close: ${s4h.avgClose}
+${s4h.candlesText}
+
+[D1]
+Last Close: ${s1d.lastClose} | High: ${s1d.high} | Low: ${s1d.low} | Avg Close: ${s1d.avgClose}
+
+[ANALYSIS REQUEST]
+Analyze order blocks, liquidity sweeps, BOS/CHoCH, bias, invalidation, and educational entry zones for this asset.`;
+    } catch (e) {
+      console.error(e);
+      alert("Failed to load OHLC candles.");
+    } finally {
+      btn.innerText = "Load Multi-TF Candles";
+      btn.disabled = false;
+    }
+  }
+
+  // --- AI ANALYSIS LOGIC ---
+  async function analyzeMarket() {
+    const inputData = document.getElementById("marketDataInput").value.trim();
+    const symbol = document.getElementById("symbolInput").value.toUpperCase();
+    
+    if (!inputData) return alert("Please load market data first.");
+
+    const btn = document.getElementById("generateBtn");
+    const btnText = document.getElementById("btnText");
+    const loader = document.getElementById("btnLoader");
+    const dashboard = document.getElementById("outputDashboard");
+    const timestamp = document.getElementById("timestamp");
+
     btn.disabled = true;
     btnText.innerText = "Processing...";
     loader.classList.remove("hidden");
-  } else {
-    btn.disabled = false;
-    btnText.innerText = "Run AI SMC Analysis";
-    loader.classList.add("hidden");
-  }
 
-  // Also disable fetch buttons when busy
-  ["fetchPriceBtn","loadCandlesBtn"].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = busy;
-  });
-}
-
-// ─── Fetch Live Price ──────────────────────────────────────────────────────
-async function handleFetchPrice() {
-  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
-  const market = document.getElementById("marketType").value;
-  if (!symbol) { Utils.toast("Please enter a symbol.", "warn"); return; }
-
-  State.symbol = symbol;
-  State.market = market;
-
-  const btn = document.getElementById("fetchPriceBtn");
-  btn.disabled = true;
-  btn.querySelector("span").innerText = "Fetching...";
-
-  try {
-    const priceInfo = await API.getLivePrice(symbol, market);
-    State.priceInfo = priceInfo;
-
-    Renderer.renderPriceTicker(symbol, priceInfo);
-
-    // Update header price
-    const hp = document.getElementById("headerPrice");
-    hp.classList.remove("hidden");
-    hp.innerHTML = `
-      <span class="text-slate-600">${Utils.escapeHtml(symbol)}</span>
-      <span class="text-white font-bold">$${Utils.formatPrice(priceInfo.price)}</span>
-      <span class="${Utils.changeColor(priceInfo.changePct)}">
-        ${priceInfo.changePct >= 0 ? "+" : ""}${(priceInfo.changePct ?? 0).toFixed(2)}%
-      </span>
+    dashboard.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-full text-blue-400 animate-pulse">
+        <div class="h-10 w-10 border-4 border-t-blue-500 border-slate-700 rounded-full animate-spin mb-4"></div>
+        <p>AI engine is analyzing ${symbol} data...</p>
+      </div>
     `;
 
-    // Pre-fill AI context
-    document.getElementById("marketDataInput").value =
-      `[LIVE PRICE]\nSymbol: ${symbol}\nPrice:  $${Utils.formatPrice(priceInfo.price)}\nChange: ${priceInfo.changePct >= 0 ? "+" : ""}${(priceInfo.changePct ?? 0).toFixed(2)}%\n\n[PENDING] Load candles for full analysis.`;
+    // Dynamic Prompt
+    const prompt = `
+You are a professional Smart Money Concepts trader.
 
-    Utils.toast(`${symbol} price fetched successfully.`, "success");
-    document.getElementById("timestamp").innerText = `Price @ ${Utils.nowStamp()}`;
-  } catch (err) {
-    console.error(err);
-    Utils.toast(err.message, "error");
-  } finally {
-    btn.disabled = false;
-    btn.querySelector("span").innerText = "Get Live Price";
-  }
-}
+Analyze ${symbol} based ONLY on the data below:
+- Multi timeframe structure
+- Order Blocks (supply / demand)
+- Liquidity (BSL / SSL / sweep / stop hunt)
+- BOS / CHoCH
+- Invalidations
 
-// ─── Load OHLCV Candles ────────────────────────────────────────────────────
-async function handleLoadCandles() {
-  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
-  const market = document.getElementById("marketType").value;
-  if (!symbol) { Utils.toast("Please enter a symbol.", "warn"); return; }
+IMPORTANT:
+Return ONLY valid JSON.
+No text before or after.
+Use numbers when possible.
 
-  State.symbol = symbol;
-  State.market = market;
+Market data:
+${inputData}
 
-  const btn = document.getElementById("loadCandlesBtn");
-  btn.disabled = true;
-  btn.querySelector("span").innerText = "Loading...";
+Return exactly this JSON structure:
+{
+  "bias": { "status": "bullish / bearish / neutral", "strength": "weak / moderate / strong", "reason": "string" },
+  "timeframes": { "M15": "string", "H1": "string", "H4": "string", "D1": "string" },
+  "order_blocks": [ { "zone": "price range", "type": "demand or supply", "timeframe": "string", "strength": "string", "reason": "string" } ],
+  "liquidity": { "bsl": "string", "ssl": "string", "sweep": "string" },
+  "trade_plan": { "entry": "string", "tp": "string", "sl": "string", "buy_scenario": "string", "sell_scenario": "string" }
+}`;
 
-  try {
-    // Fetch price + all timeframes in parallel
-    const [priceInfo, candlesByTF] = await Promise.all([
-      API.getLivePrice(symbol, market),
-      API.getAllTimeframes(symbol, market),
-    ]);
+    try {
+      const response = await puter.ai.chat(prompt);
+      const text = typeof response === "string" ? response : (response?.message?.content || response?.text || JSON.stringify(response));
+      const aiData = extractJson(text);
 
-    State.priceInfo   = priceInfo;
-    State.candlesByTF = candlesByTF;
+      if (!aiData.bias || !aiData.trade_plan) throw new Error("Incomplete AI data format returned.");
 
-    // Count successful timeframes
-    const loaded = Object.values(candlesByTF).filter(Boolean).length;
-    if (loaded === 0) throw new Error("No candle data returned. Check symbol and API key.");
-
-    // Update price ticker
-    Renderer.renderPriceTicker(symbol, priceInfo);
-
-    // Show TF tab bar + draw chart
-    document.getElementById("tfTabs").classList.remove("hidden");
-    drawChart(State.activeTF);
-
-    // Build AI context text
-    const summaries = ["M15","H1","H4","D1"].map((tf) => {
-      const candles = candlesByTF[tf];
-      return candles ? Utils.summarizeCandles(candles, tf, CONFIG.AI_CANDLE_CONTEXT) : null;
-    });
-    const livePriceStr = `$${Utils.formatPrice(priceInfo.price)}`;
-    document.getElementById("marketDataInput").value =
-      Utils.buildMarketContext(symbol, market, summaries, livePriceStr);
-
-    document.getElementById("timestamp").innerText = `Candles @ ${Utils.nowStamp()}`;
-    Utils.toast(`${symbol} — ${loaded}/4 timeframes loaded.`, loaded === 4 ? "success" : "warn");
-  } catch (err) {
-    console.error(err);
-    Utils.toast(err.message, "error");
-  } finally {
-    btn.disabled = false;
-    btn.querySelector("span").innerText = "Load Multi-TF Candles";
-  }
-}
-
-// ─── Draw / Switch Chart ───────────────────────────────────────────────────
-function drawChart(tf) {
-  State.activeTF = tf;
-  const candles = State.candlesByTF[tf];
-
-  // Update tab styles
-  document.querySelectorAll(".tf-tab").forEach((t) => {
-    t.classList.toggle("active", t.innerText === tf);
-  });
-
-  if (candles && candles.length > 0) {
-    Renderer.renderChart(candles, State.symbol, tf);
-  } else {
-    const container = document.getElementById("chartContainer");
-    container.innerHTML = `<div class="flex items-center justify-center h-full text-slate-700 text-xs italic">
-      No ${tf} data available
-    </div>`;
-  }
-}
-
-function switchChart(tf) {
-  drawChart(tf);
-}
-
-// ─── Run AI Analysis ───────────────────────────────────────────────────────
-async function handleAnalyze() {
-  if (State.busy) return;
-
-  const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
-  const market = document.getElementById("marketType").value;
-
-  if (!symbol) { Utils.toast("Please enter a symbol.", "warn"); return; }
-
-  // Require either price or candle data
-  const hasCandles = Object.values(State.candlesByTF).some(Boolean);
-  const hasContext = document.getElementById("marketDataInput").value.trim().length > 30;
-
-  if (!hasCandles && !hasContext) {
-    Utils.toast("Please load market data first (price or candles).", "warn");
-    return;
-  }
-
-  State.symbol = symbol;
-  State.market = market;
-
-  setBusy(true);
-  Renderer.showLoading(`Analyzing ${symbol} with SMC framework...`);
-
-  try {
-    // If no candles yet but we have price, try to fetch candles silently
-    if (!hasCandles && State.priceInfo) {
-      const candlesByTF = await API.getAllTimeframes(symbol, market).catch(() => ({}));
-      Object.assign(State.candlesByTF, candlesByTF);
+      renderDashboard(aiData, symbol);
+      timestamp.innerText = `Last updated: ${nowStamp()}`;
+    } catch (error) {
+      console.error(error);
+      dashboard.innerHTML = `
+        <div class="p-6 bg-red-900/30 border border-red-500/50 rounded-xl text-red-300">
+          <h4 class="font-bold mb-2">System Error</h4>
+          <p class="text-sm font-mono text-left" dir="ltr">${escapeHtml(error.message)}</p>
+        </div>
+      `;
+    } finally {
+      btn.disabled = false;
+      btnText.innerText = "Run AI SMC Analysis";
+      loader.classList.add("hidden");
     }
-
-    // Ensure price info exists
-    let priceInfo = State.priceInfo;
-    if (!priceInfo) {
-      priceInfo = await API.getLivePrice(symbol, market);
-      State.priceInfo = priceInfo;
-      Renderer.renderPriceTicker(symbol, priceInfo);
-    }
-
-    const { aiData } = await Analysis.runAnalysis(
-      symbol, market, State.candlesByTF, priceInfo
-    );
-
-    Renderer.renderAnalysis(aiData, symbol, priceInfo);
-    document.getElementById("timestamp").innerText = `Analysis @ ${Utils.nowStamp()}`;
-    Utils.toast("Analysis complete.", "success");
-  } catch (err) {
-    console.error(err);
-    Renderer.showError(err.message);
-    Utils.toast("Analysis failed. See output panel.", "error");
-  } finally {
-    setBusy(false);
   }
-}
+
+  // Passing the symbol dynamically to the dashboard renderer
+  function renderDashboard(data, symbol = "Asset") {
+    const dashboard = document.getElementById("outputDashboard");
+    const biasStatus = safe(data?.bias?.status, "Neutral");
+    const biasStrength = safe(data?.bias?.strength, "moderate");
+
+    const biasColor =
+      String(biasStatus).toLowerCase().includes("bullish") ? "from-emerald-500 to-cyan-400" :
+      String(biasStatus).toLowerCase().includes("bearish") ? "from-rose-500 to-orange-400" :
+      "from-yellow-500 to-amber-400";
+
+    const obsHtml = (data.order_blocks || []).map(ob => {
+      const isDemand = String(ob.type || "").toLowerCase().includes("demand");
+      const outerClass = isDemand ? "bg-emerald-900/20 border-emerald-500/30 text-emerald-100" : "bg-rose-900/20 border-rose-500/30 text-rose-100";
+      const badgeClass = isDemand ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400";
+
+      return `
+        <div class="p-4 rounded-xl border ${outerClass} backdrop-blur-sm shadow-md transition-all hover:scale-[1.01]">
+          <div class="flex justify-between items-start mb-3">
+            <span class="text-sm font-mono opacity-80">${escapeHtml(safe(ob.timeframe))}</span>
+            <span class="text-xs font-bold uppercase tracking-wider ${badgeClass} px-2 py-1 rounded-md">${escapeHtml(safe(ob.type))}</span>
+          </div>
+          <h4 class="text-xl font-black font-mono mb-2">${escapeHtml(safe(ob.zone))}</h4>
+          <p class="text-xs opacity-90 leading-relaxed">${escapeHtml(safe(ob.reason))}</p>
+        </div>`;
+    }).join("") || `<div class="text-slate-500 text-sm">No clear order blocks.</div>`;
+
+    dashboard.innerHTML = `
+      <div class="space-y-6 flex flex-col h-full">
+        <div class="text-center mb-2">
+            <h2 class="text-2xl font-black text-white tracking-widest uppercase">${escapeHtml(symbol)} Analysis</h2>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl relative overflow-hidden shadow-lg">
+          <div class="absolute top-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Institutional Bias</h3>
+          <div class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${biasColor} mb-2 text-center">
+            ${escapeHtml(biasStatus)}
+          </div>
+          <div class="text-center text-xs text-slate-400 mb-4">Strength: ${escapeHtml(biasStrength)}</div>
+          <p class="text-sm text-slate-300 text-center"><strong class="text-slate-400">Reason:</strong> ${escapeHtml(safe(data?.bias?.reason))}</p>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Order Blocks</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${obsHtml}</div>
+        </div>
+        
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Educational Trade Plan</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl">
+              <div class="text-slate-400 text-xs mb-1">Entry Zone</div>
+              <div class="text-white font-bold">${escapeHtml(safe(data?.trade_plan?.entry))}</div>
+            </div>
+            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl">
+              <div class="text-slate-400 text-xs mb-1">Take Profit (TP)</div>
+              <div class="text-white font-bold">${escapeHtml(safe(data?.trade_plan?.tp))}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
 </script>
-
 </body>
 </html>
