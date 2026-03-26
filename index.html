@@ -1,156 +1,49 @@
- <!DOCTYPE html>
-<html lang="en" dir="ltr" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SelfVIP Trading - Multi-Market Pro Dashboard</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-  
-  <script src="https://js.puter.com/v2/"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
-
-  <style>
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-  </style>
-</head>
-
-<body class="bg-slate-950 font-sans flex flex-col min-h-screen text-slate-200">
-
-<header class="bg-slate-900 p-4 flex justify-between items-center sticky top-0 z-50 shadow-2xl border-b border-slate-800">
-  <div class="flex items-center gap-3">
-    <h1 class="text-2xl font-extrabold tracking-tight italic text-white">
-      SelfVIP<span class="text-blue-500">Trading</span>
-    </h1>
-    <span class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-500/30">
-      PRO DASHBOARD + ML
-    </span>
-  </div>
-  <div class="flex items-center gap-4 text-xs font-mono">
-    <span class="text-emerald-400 animate-pulse flex items-center gap-2">
-      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-      SYSTEM ACTIVE
-    </span>
-  </div>
-</header>
-
-<main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-6">
-
-  <aside class="w-full lg:w-1/3 flex flex-col gap-4">
-    
-    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">⚙️ Settings</h3>
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Market</label>
-          <select id="marketType" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none">
-            <option value="crypto">Crypto</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Asset Symbol</label>
-          <input type="text" id="symbolInput" value="BTCUSDT" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none uppercase" />
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">🚀 SMC Execution</h3>
-      <button id="autoRunBtn" onclick="runFullProcess()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-black text-lg transition-all shadow-lg flex justify-center items-center gap-2">
-        <span id="autoRunText">Auto Analyze Data</span>
-        <div id="autoRunLoader" class="hidden h-5 w-5 border-4 border-t-white border-blue-800 rounded-full animate-spin"></div>
-      </button>
-      <div id="statusIndicators" class="mt-4 space-y-2 text-xs font-mono text-slate-400">
-        <div id="statusPrice" class="flex items-center gap-2"><span>⏳</span> Waiting for Price...</div>
-      </div>
-    </div>
-
-    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-      <h3 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
-        <span>🤖</span> ML Predictor (TensorFlow)
-      </h3>
-      <p class="text-xs text-slate-400 mb-3">
-        Train a neural network directly in your browser.
-      </p>
-      <div class="flex flex-col gap-2">
-        <label class="block text-xs font-bold text-slate-500">Number of Candles</label>
-        <input type="number" id="mlCandlesCount" value="500" min="100" max="1000" class="bg-slate-950 border border-slate-700 text-white rounded p-2 text-sm" />
-        
-        <label class="block text-xs font-bold text-slate-500">Epochs</label>
-        <input type="number" id="mlEpochs" value="10" min="5" max="50" class="bg-slate-950 border border-slate-700 text-white rounded p-2 text-sm" />
-        
-        <button id="trainModelBtn" class="mt-3 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-bold transition-all">
-          🧠 Start Training
-        </button>
-        <div id="mlStatus" class="text-xs text-slate-400 text-center mt-2 hidden">Ready</div>
-        <div id="mlResult" class="text-sm text-center font-mono mt-2 hidden p-3 bg-slate-800 rounded-lg"></div>
-      </div>
-    </div>
-
-  </aside>
-
-  <section class="w-full lg:w-2/3 flex flex-col gap-4">
-    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-4 h-[300px] flex flex-col">
-      <h2 class="font-bold text-white mb-2 text-sm">Live Chart</h2>
-      <div id="chartContainer" class="flex-grow w-full h-full relative">
-        <div id="chartPlaceholder" class="absolute inset-0 flex items-center justify-center text-slate-600 italic">Chart will appear here</div>
-      </div>
-    </div>
-
-    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex-grow flex flex-col overflow-hidden min-h-[400px]">
-      <div class="bg-slate-800/50 p-4 border-b border-slate-800 flex justify-between items-center">
-        <h2 class="font-bold text-white">AI SMC Analysis</h2>
-      </div>
-      <div id="outputDashboard" class="p-6 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950 flex-grow">
-        <div class="flex flex-col items-center justify-center h-full text-slate-600 italic">
-          <p>Click "Auto Analyze Data" to start SMC analysis.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<script>
+ <script>
   // ==========================================
   // الجزء الأول: التحليل العادي والرسوم البيانية
   // ==========================================
   let appState = { symbol: "", market: "crypto", livePrice: 0, candles: [] };
-  let chart = null, candlestickSeries = null;
+  let chart = null;
+  let candlestickSeries = null; // المتغير المسؤول عن رسم الشموع
 
+  // دالة لتحديث حالة التحميل في الواجهة
   function updateStatus(id, text, state = "loading") {
     const el = document.getElementById(id);
     if(state === "loading") el.innerHTML = `<span class="animate-spin inline-block">⏳</span> ${text}`;
     if(state === "done") el.innerHTML = `<span class="text-emerald-500">✅</span> ${text}`;
   }
 
+  // دالة رسم المخطط البياني (تم إصلاح خطأ setData هنا)
   function renderChart(data) {
     const container = document.getElementById('chartContainer');
-    document.getElementById('chartPlaceholder').style.display = 'none';
+    const placeholder = document.getElementById('chartPlaceholder');
+    if(placeholder) placeholder.style.display = 'none';
 
+    // إنشاء المخطط إذا لم يكن موجوداً
     if (!chart) {
       chart = LightweightCharts.createChart(container, {
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#cbd5e1' },
         grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
       });
+    }
+    
+    // التأكد من إنشاء سلسلة الشموع قبل تعيين البيانات لتجنب خطأ Null
+    if (!candlestickSeries) {
       candlestickSeries = chart.addCandlestickSeries({ upColor: '#10b981', downColor: '#f43f5e', borderVisible: false });
     }
     
+    // تنسيق الوقت والبيانات للمخطط
     const formattedData = data.map((c, i) => ({
       time: Math.floor(Date.now() / 1000) - ((data.length - i) * 3600), 
       open: c.open, high: c.high, low: c.low, close: c.close
     }));
+    
     candlestickSeries.setData(formattedData);
     chart.timeScale().fitContent();
   }
 
+  // جلب السعر المباشر
   async function fetchLivePrice() {
     updateStatus("statusPrice", "Fetching...", "loading");
     const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${appState.symbol}`);
@@ -159,6 +52,7 @@
     updateStatus("statusPrice", `Price: $${appState.livePrice}`, "done");
   }
 
+  // جلب بيانات الشموع
   async function fetchCandlesAPI() {
     const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${appState.symbol}&interval=1h&limit=50`);
     const data = await res.json();
@@ -166,36 +60,53 @@
     renderChart(appState.candles);
   }
 
+  // تحليل الذكاء الاصطناعي (SMC)
   async function analyzeWithAI() {
-    const prompt = `Analyze ${appState.symbol} at ${appState.livePrice}. Return ONLY strict JSON: {"bias": {"status": "bullish or bearish", "reason": "text"}, "trade_plan": {"entry": "price", "tp": "price", "sl": "price"}}`;
-    const response = await puter.ai.chat(prompt);
-    const aiText = typeof response === "string" ? response : response?.message?.content || JSON.stringify(response);
-    const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-    const aiData = JSON.parse(jsonMatch[0]);
+    try {
+        const prompt = `Analyze ${appState.symbol} at ${appState.livePrice}. Return ONLY strict JSON: {"bias": {"status": "bullish or bearish", "reason": "text"}, "trade_plan": {"entry": "price", "tp": "price", "sl": "price"}}`;
+        const response = await puter.ai.chat(prompt);
+        const aiText = typeof response === "string" ? response : response?.message?.content || JSON.stringify(response);
+        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        
+        if (!jsonMatch) throw new Error("AI did not return valid JSON. Try again.");
+        const aiData = JSON.parse(jsonMatch[0]);
 
-    document.getElementById("outputDashboard").innerHTML = `
-      <div class="p-4 bg-slate-800 rounded-xl border border-slate-700">
-        <h3 class="text-sm font-bold text-slate-400">Directional Bias</h3>
-        <p class="text-xl font-bold ${aiData.bias.status.includes('bull') ? 'text-emerald-400' : 'text-rose-400'} uppercase">${aiData.bias.status}</p>
-        <p class="text-sm mt-1">${aiData.bias.reason}</p>
-      </div>
-      <div class="mt-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
-        <h3 class="text-sm font-bold text-slate-400">Trade Plan</h3>
-        <p>Entry: ${aiData.trade_plan.entry}</p>
-        <p>TP: ${aiData.trade_plan.tp}</p>
-        <p>SL: ${aiData.trade_plan.sl}</p>
-      </div>`;
+        document.getElementById("outputDashboard").innerHTML = `
+          <div class="p-4 bg-slate-800 rounded-xl border border-slate-700">
+            <h3 class="text-sm font-bold text-slate-400">Directional Bias</h3>
+            <p class="text-xl font-bold ${aiData.bias.status.includes('bull') ? 'text-emerald-400' : 'text-rose-400'} uppercase">${aiData.bias.status}</p>
+            <p class="text-sm mt-1">${aiData.bias.reason}</p>
+          </div>
+          <div class="mt-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
+            <h3 class="text-sm font-bold text-slate-400">Trade Plan</h3>
+            <p>Entry: ${aiData.trade_plan.entry}</p>
+            <p>TP: ${aiData.trade_plan.tp}</p>
+            <p>SL: ${aiData.trade_plan.sl}</p>
+          </div>`;
+    } catch (err) {
+        document.getElementById("outputDashboard").innerHTML = `<div class="text-rose-500 p-4 bg-rose-900/20 rounded-xl">AI Analysis Error: ${err.message}</div>`;
+    }
   }
 
+  // تشغيل كل شيء بضغطة زر واحدة
   async function runFullProcess() {
     appState.symbol = document.getElementById("symbolInput").value.toUpperCase();
     if (!appState.symbol) return alert("Please enter a symbol");
+    
+    const btnText = document.getElementById("autoRunText");
+    const loader = document.getElementById("autoRunLoader");
+    btnText.innerText = "Processing...";
+    loader.classList.remove("hidden");
+    
     try {
       await fetchLivePrice();
       await fetchCandlesAPI();
       await analyzeWithAI();
     } catch (error) {
-      document.getElementById("outputDashboard").innerHTML = `<div class="text-rose-500">${error.message}</div>`;
+      document.getElementById("outputDashboard").innerHTML = `<div class="text-rose-500">System Error: ${error.message}</div>`;
+    } finally {
+      btnText.innerText = "Auto Analyze Data";
+      loader.classList.add("hidden");
     }
   }
 
@@ -205,27 +116,33 @@
   // ==========================================
   let mlModel = null;
 
+  // جلب البيانات لتدريب النموذج
   async function fetchMLData(symbol, limit) {
     const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=${limit}`);
     const data = await res.json();
-    return data.map(candle => parseFloat(candle[4])); // أسعار الإغلاق فقط
+    return data.map(candle => parseFloat(candle[4]));
   }
 
+  // تطبيع البيانات لتسهيل قراءتها على الذكاء الاصطناعي
   function normalizeData(data) {
     const min = Math.min(...data);
     const max = Math.max(...data);
     return data.map(val => (val - min) / (max - min));
   }
 
+  // إصلاح خطأ TensorFlow 3D: تحويل البيانات لتكون مصفوفة ثلاثية الأبعاد
   function createMLSequences(data, seqLength = 20) {
     const X = [], y = [];
     for (let i = seqLength; i < data.length; i++) {
-      X.push(data.slice(i - seqLength, i));
-      y.push(data[i] > data[i-1] ? 1 : 0); // 1 صعود، 0 هبوط
+      // التعديل هنا: نقوم بتغليف كل قيمة [val] لتصبح المصفوفة متوافقة مع tensor3d
+      const seq = data.slice(i - seqLength, i).map(val => [val]); 
+      X.push(seq);
+      y.push(data[i] > data[i-1] ? 1 : 0);
     }
     return { X, y, seqLength };
   }
 
+  // بناء نموذج الذكاء الاصطناعي
   function buildMLModel(seqLength) {
     const m = tf.sequential();
     m.add(tf.layers.lstm({ units: 30, inputShape: [seqLength, 1], returnSequences: false }));
@@ -234,6 +151,7 @@
     return m;
   }
 
+  // التدريب والتوقع
   async function trainAndPredict() {
     const symbol = document.getElementById('symbolInput').value.toUpperCase();
     const candlesCount = parseInt(document.getElementById('mlCandlesCount').value);
@@ -249,7 +167,7 @@
     resultDiv.classList.add('hidden');
     
     try {
-      statusDiv.innerText = '1/4 Fetching data...';
+      statusDiv.innerText = '1/4 Fetching data from Binance...';
       const closes = await fetchMLData(symbol, candlesCount);
       
       statusDiv.innerText = '2/4 Preparing tensors...';
@@ -257,34 +175,36 @@
       const { X, y } = createMLSequences(normalized, seqLength);
 
       const split = Math.floor(X.length * 0.8);
+      // الآن المصفوفة X جاهزة تماماً وتعمل بدون أخطاء
       const trainX = tf.tensor3d(X.slice(0, split), [split, seqLength, 1]);
       const trainY = tf.tensor2d(y.slice(0, split), [split, 1]);
 
-      statusDiv.innerText = `3/4 Training (${epochs} epochs)...`;
+      statusDiv.innerText = `3/4 Training ML Model (${epochs} epochs)...`;
       mlModel = buildMLModel(seqLength);
 
       await mlModel.fit(trainX, trainY, {
         epochs: epochs,
         callbacks: {
           onEpochEnd: (epoch, logs) => {
-            statusDiv.innerText = `Training... Epoch ${epoch+1}/${epochs} (Acc: ${(logs.acc*100).toFixed(1)}%)`;
+            statusDiv.innerText = `Training... Epoch ${epoch+1}/${epochs} (Accuracy: ${(logs.acc*100).toFixed(1)}%)`;
           }
         }
       });
 
       statusDiv.innerText = '4/4 Predicting next candle...';
-      const lastSeq = normalized.slice(-seqLength);
+      // تجهيز بيانات آخر شمعة للتوقع بطريقة صحيحة ثلاثية الأبعاد
+      const lastSeq = normalized.slice(-seqLength).map(val => [val]);
       const inputPred = tf.tensor3d([lastSeq], [1, seqLength, 1]);
       const prob = (await mlModel.predict(inputPred).data())[0];
       
-      const direction = prob > 0.5 ? 'BULLISH' : 'BEARISH';
+      const direction = prob > 0.5 ? 'BULLISH (صاعد)' : 'BEARISH (هابط)';
       const confidence = (prob > 0.5 ? prob : 1 - prob) * 100;
 
       resultDiv.classList.remove('hidden');
       resultDiv.innerHTML = `
-        <div class="text-slate-400 text-xs">Prediction:</div>
-        <div class="font-bold text-lg ${direction === 'BULLISH' ? 'text-emerald-400' : 'text-rose-400'}">${direction}</div>
-        <div class="text-xs">Confidence: ${confidence.toFixed(1)}%</div>
+        <div class="text-slate-400 text-xs">AI ML Prediction:</div>
+        <div class="font-bold text-lg ${direction.includes('BULLISH') ? 'text-emerald-400' : 'text-rose-400'}">${direction}</div>
+        <div class="text-xs">Confidence Rate: ${confidence.toFixed(1)}%</div>
       `;
       statusDiv.innerText = 'Training Complete ✅';
 
@@ -297,5 +217,3 @@
 
   document.getElementById('trainModelBtn').addEventListener('click', trainAndPredict);
 </script>
-</body>
-</html>
