@@ -27,6 +27,10 @@ function createSequences(data, seqLength) {
     // التسمية: 1 إذا السعر القادم أعلى من السعر الحالي، وإلا 0
     y.push(data[i] > data[i-1] ? 1 : 0);
   }
+  // التحقق من أن جميع التسلسلات بنفس الطول
+  if (X.length > 0 && X.some(seq => seq.length !== seqLength)) {
+    throw new Error('Some sequences have incorrect length');
+  }
   return { X, y };
 }
 
@@ -91,11 +95,14 @@ async function trainAndPredict() {
     const X_val = X.slice(splitIndex);
     const y_val = y.slice(splitIndex);
 
-    // 5. تحويل إلى Tensors
-    const trainX = tf.tensor3d(X_train, [X_train.length, seqLength, 1]);
-    const trainY = tf.tensor2d(y_train, [y_train.length, 1]);
-    const valX = tf.tensor3d(X_val, [X_val.length, seqLength, 1]);
-    const valY = tf.tensor2d(y_val, [y_val.length, 1]);
+    // التحقق من البيانات قبل إنشاء التوترات
+    if (X_train.length === 0 || X_val.length === 0) throw new Error('Not enough samples after split');
+    
+    // 5. تحويل إلى Tensors باستخدام tf.tensor بدلاً من tf.tensor3d لتجنب مشاكل الشكل
+    const trainX = tf.tensor(X_train, [X_train.length, seqLength, 1], 'float32');
+    const trainY = tf.tensor(y_train, [y_train.length, 1], 'float32');
+    const valX = tf.tensor(X_val, [X_val.length, seqLength, 1], 'float32');
+    const valY = tf.tensor(y_val, [y_val.length, 1], 'float32');
 
     // 6. بناء النموذج
     statusDiv.innerText = 'Building model...';
@@ -117,7 +124,8 @@ async function trainAndPredict() {
 
     // 8. التنبؤ بالشمعة القادمة
     const lastSeq = normalized.slice(-seqLength);
-    const inputPred = tf.tensor3d([lastSeq], [1, seqLength, 1]);
+    if (lastSeq.length !== seqLength) throw new Error('Last sequence length mismatch');
+    const inputPred = tf.tensor([lastSeq], [1, seqLength, 1], 'float32');
     const prediction = mlModel.predict(inputPred);
     const prob = (await prediction.data())[0];
     const direction = prob > 0.5 ? 'bullish' : 'bearish';
@@ -136,6 +144,9 @@ async function trainAndPredict() {
     console.error(err);
     statusDiv.innerText = `Error: ${err.message}`;
     resultDiv.classList.add('hidden');
+    // عرض خطأ تفصيلي للمستخدم
+    resultDiv.innerHTML = `<div class="text-red-400 text-sm">Error: ${err.message}</div>`;
+    resultDiv.classList.remove('hidden');
   } finally {
     trainBtn.disabled = false;
     trainBtn.innerText = '🧠 Start Training';
