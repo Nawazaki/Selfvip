@@ -24,13 +24,10 @@ function createSequences(data, seqLength) {
   const X = [], y = [];
   for (let i = seqLength; i < data.length; i++) {
     X.push(data.slice(i - seqLength, i));
-    // التسمية: 1 إذا السعر القادم أعلى من السعر الحالي، وإلا 0
     y.push(data[i] > data[i-1] ? 1 : 0);
   }
-  // التحقق من أن جميع التسلسلات بنفس الطول
-  if (X.length > 0 && X.some(seq => seq.length !== seqLength)) {
-    throw new Error('Some sequences have incorrect length');
-  }
+  // التحقق من صحة البيانات
+  if (X.length === 0) throw new Error('No sequences created');
   return { X, y };
 }
 
@@ -49,6 +46,19 @@ function buildModel(seqLength) {
     metrics: ['accuracy']
   });
   return model;
+}
+
+// دالة لتحويل البيانات إلى تنسيق 3D آمن
+function toTensor3D(data, seqLength) {
+  // data هو مصفوفة من المصفوفات [samples, seqLength] يجب أن تكون قيمها رقمية
+  const flat = data.flat(); // تحويل إلى 1D
+  const totalElements = data.length * seqLength;
+  if (flat.length !== totalElements) {
+    throw new Error(`Data length mismatch: expected ${totalElements} but got ${flat.length}`);
+  }
+  // استخدام Float32Array لتحسين الأداء
+  const tensor = tf.tensor3d(flat, [data.length, seqLength, 1], 'float32');
+  return tensor;
 }
 
 // دالة التدريب الرئيسية
@@ -77,7 +87,7 @@ async function trainAndPredict() {
   try {
     // 1. جلب البيانات
     const closes = await fetchHistoricalData(symbol, '1h', candleCount);
-    if (closes.length < seqLength + 10) throw new Error('Not enough data');
+    if (closes.length < seqLength + 10) throw new Error(`Not enough data. Only ${closes.length} candles available. Need at least ${seqLength + 10}`);
 
     // 2. تطبيع
     const { normalized, min, max } = normalize(closes);
@@ -86,8 +96,7 @@ async function trainAndPredict() {
 
     // 3. إنشاء التسلسلات
     const { X, y } = createSequences(normalized, seqLength);
-    if (X.length === 0) throw new Error('Cannot create sequences');
-
+    
     // 4. تقسيم تدريب/اختبار (80/20)
     const splitIndex = Math.floor(X.length * 0.8);
     const X_train = X.slice(0, splitIndex);
@@ -95,14 +104,15 @@ async function trainAndPredict() {
     const X_val = X.slice(splitIndex);
     const y_val = y.slice(splitIndex);
 
-    // التحقق من البيانات قبل إنشاء التوترات
-    if (X_train.length === 0 || X_val.length === 0) throw new Error('Not enough samples after split');
-    
-    // 5. تحويل إلى Tensors باستخدام tf.tensor بدلاً من tf.tensor3d لتجنب مشاكل الشكل
-    const trainX = tf.tensor(X_train, [X_train.length, seqLength, 1], 'float32');
-    const trainY = tf.tensor(y_train, [y_train.length, 1], 'float32');
-    const valX = tf.tensor(X_val, [X_val.length, seqLength, 1], 'float32');
-    const valY = tf.tensor(y_val, [y_val.length, 1], 'float32');
+    if (X_train.length === 0 || X_val.length === 0) {
+      throw new Error(`Insufficient samples: train=${X_train.length}, val=${X_val.length}`);
+    }
+
+    // 5. تحويل إلى Tensors باستخدام الدالة الآمنة
+    const trainX = toTensor3D(X_train, seqLength);
+    const trainY = tf.tensor2d(y_train, [y_train.length, 1], 'float32');
+    const valX = toTensor3D(X_val, seqLength);
+    const valY = tf.tensor2d(y_val, [y_val.length, 1], 'float32');
 
     // 6. بناء النموذج
     statusDiv.innerText = 'Building model...';
@@ -124,8 +134,10 @@ async function trainAndPredict() {
 
     // 8. التنبؤ بالشمعة القادمة
     const lastSeq = normalized.slice(-seqLength);
-    if (lastSeq.length !== seqLength) throw new Error('Last sequence length mismatch');
-    const inputPred = tf.tensor([lastSeq], [1, seqLength, 1], 'float32');
+    if (lastSeq.length !== seqLength) {
+      throw new Error(`Last sequence length is ${lastSeq.length} but expected ${seqLength}`);
+    }
+    const inputPred = toTensor3D([lastSeq], seqLength);
     const prediction = mlModel.predict(inputPred);
     const prob = (await prediction.data())[0];
     const direction = prob > 0.5 ? 'bullish' : 'bearish';
@@ -139,14 +151,13 @@ async function trainAndPredict() {
       <span class="text-xs">Confidence: ${(confidence * 100).toFixed(2)}%</span><br>
       <span class="text-[10px] text-slate-500">(Based on last ${seqLength} candles, ${epochs} epochs)</span>
     `;
-    statusDiv.innerText = `Training complete. Final accuracy: ${history.history.val_acc[history.history.val_acc.length-1].toFixed(4)}`;
+    const finalAcc = history.history.val_acc[history.history.val_acc.length-1];
+    statusDiv.innerText = `Training complete. Final accuracy: ${finalAcc.toFixed(4)}`;
   } catch (err) {
     console.error(err);
     statusDiv.innerText = `Error: ${err.message}`;
-    resultDiv.classList.add('hidden');
-    // عرض خطأ تفصيلي للمستخدم
-    resultDiv.innerHTML = `<div class="text-red-400 text-sm">Error: ${err.message}</div>`;
     resultDiv.classList.remove('hidden');
+    resultDiv.innerHTML = `<div class="text-red-400 text-sm">Error: ${err.message}</div>`;
   } finally {
     trainBtn.disabled = false;
     trainBtn.innerText = '🧠 Start Training';
