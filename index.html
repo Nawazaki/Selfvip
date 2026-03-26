@@ -8,13 +8,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- TensorFlow.js -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
-  <!-- Lightweight Charts (يتم تحميلها أولاً) -->
- <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js"></script>
-  <!-- html2canvas للتصدير -->
+  <!-- Lightweight Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js"></script>
+  <!-- html2canvas for export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Puter.ai -->
   <script src="https://js.puter.com/v2/"></script>
-  <!-- CSS مخصص -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-950 font-sans flex flex-col min-h-screen text-slate-200">
@@ -41,9 +41,10 @@
 </header>
 
 <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-6">
-  <!-- الشريط الجانبي -->
+  <!-- Sidebar -->
   <aside class="w-full lg:w-1/3 flex flex-col gap-4">
-    <!-- إعدادات الأصل والذكاء الاصطناعي -->
+
+    <!-- Asset & AI Settings -->
     <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
       <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">⚙️ Asset & AI Settings</h3>
       <div class="space-y-3">
@@ -51,8 +52,8 @@
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Market Type</label>
           <select id="marketType" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500">
             <option value="crypto">Crypto (Binance)</option>
-            <option value="stocks">Stocks (Alpha Vantage mock)</option>
-            <option value="forex">Forex (Twelve Data mock)</option>
+            <option value="stocks">Stocks (Alpha Vantage)</option>
+            <option value="forex">Forex (Twelve Data)</option>
           </select>
         </div>
         <div>
@@ -77,7 +78,7 @@
       </div>
     </div>
 
-    <!-- قسم البيانات والأزرار -->
+    <!-- Market Data Controls -->
     <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
       <h3 class="text-lg font-bold text-white mb-2">📡 Market Data</h3>
       <div class="flex flex-wrap gap-2 mb-3">
@@ -93,10 +94,10 @@
       </button>
     </div>
 
-    <!-- قسم التعلم الآلي -->
+    <!-- Machine Learning Predictor -->
     <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
       <h3 class="text-lg font-bold text-white mb-3 flex items-center gap-2">🤖 Machine Learning Predictor</h3>
-      <p class="text-xs text-slate-400 mb-3">Train an LSTM model on historical data to predict next candle direction.</p>
+      <p class="text-xs text-slate-400 mb-3">Train a CNN-LSTM model on historical data to predict future price.</p>
       <div class="flex flex-col gap-2">
         <label class="block text-xs font-bold text-slate-500">Candles (training)</label>
         <input type="number" id="mlCandlesCount" value="1000" min="100" max="2000" class="bg-slate-950 border border-slate-700 rounded p-2 text-sm" />
@@ -107,12 +108,69 @@
         <button id="trainModelBtn" class="mt-3 bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-xl font-bold transition-all">
           🧠 Start Training
         </button>
+        <div class="flex gap-2 mt-2">
+          <button id="saveModelBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-1 rounded-lg text-xs font-bold transition-all">💾 Save Model</button>
+          <button id="loadModelBtn" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-1 rounded-lg text-xs font-bold transition-all">📂 Load Model</button>
+          <button id="predictWithModelBtn" class="flex-1 bg-purple-500 hover:bg-purple-400 text-white py-1 rounded-lg text-xs font-bold transition-all">🔮 Predict (Loaded)</button>
+        </div>
+        <div id="modelStatus" class="text-xs text-slate-400 text-center mt-2"></div>
         <div id="mlStatus" class="text-xs text-slate-400 text-center mt-2 hidden"></div>
         <div id="mlResult" class="text-sm text-center font-mono mt-2 hidden p-3 bg-slate-800 rounded-lg"></div>
+        <div class="w-full bg-slate-700 rounded-full h-2.5 mt-2 hidden" id="progressBarContainer">
+          <div class="bg-blue-600 h-2.5 rounded-full" style="width: 0%" id="progressBar"></div>
+        </div>
       </div>
     </div>
 
-    <!-- قسم التصدير والإعدادات -->
+    <!-- Risk Management -->
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-3">💰 Risk Management</h3>
+      <div class="space-y-2">
+        <div>
+          <label class="block text-xs font-bold text-slate-500">Account Balance ($)</label>
+          <input type="number" id="accountBalance" value="10000" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500">Risk per Trade (%)</label>
+          <input type="number" id="riskPercent" value="2" step="0.5" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500">Stop Loss (pips/points)</label>
+          <input type="number" id="stopLossPoints" value="100" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+        </div>
+        <button id="calcPositionBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-lg text-sm font-bold">📊 Calculate Position Size</button>
+        <div id="positionResult" class="text-xs text-slate-400 text-center hidden"></div>
+      </div>
+    </div>
+
+    <!-- Backtesting -->
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-3">⏱️ Backtesting</h3>
+      <div class="flex flex-col gap-2">
+        <label class="text-xs text-slate-500">Test Period (days)</label>
+        <input type="number" id="backtestDays" value="30" class="bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+        <button id="runBacktestBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm font-bold">Run Backtest</button>
+        <div id="backtestResult" class="text-xs text-slate-400 text-center hidden"></div>
+      </div>
+    </div>
+
+    <!-- API Keys for Stocks/Forex -->
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-3">🔑 API Keys (Stocks/Forex)</h3>
+      <div class="space-y-2">
+        <div>
+          <label class="block text-xs text-slate-500">Alpha Vantage Key</label>
+          <input type="text" id="alphaVantageKey" placeholder="Your API key" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-500">Twelve Data Key</label>
+          <input type="text" id="twelveDataKey" placeholder="Your API key" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+        </div>
+        <div class="text-[10px] text-slate-400">* CORS proxy may be required; use https://cors-anywhere.herokuapp.com/ as fallback.</div>
+      </div>
+    </div>
+
+    <!-- Export & Tools -->
     <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
       <h3 class="text-lg font-bold text-white mb-3">📤 Export & Tools</h3>
       <div class="flex gap-2 flex-wrap">
@@ -128,11 +186,20 @@
       </div>
       <p id="wsStatus" class="text-[10px] text-slate-500 mt-1">WebSocket inactive</p>
     </div>
+
+    <!-- Model Stats -->
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-3">📊 Model Stats</h3>
+      <div id="modelStats" class="text-xs text-slate-400 space-y-1">
+        <p>Model: Not trained</p>
+        <p>Last accuracy: --</p>
+        <p>Last prediction: --</p>
+      </div>
+    </div>
   </aside>
 
-  <!-- اللوحة اليمنى: إشارات AI والرسم البياني -->
+  <!-- Right Panel: AI Signal + Chart -->
   <section class="w-full lg:w-2/3 flex flex-col gap-6">
-    <!-- بطاقة إشارات الذكاء الاصطناعي -->
     <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex flex-col overflow-hidden">
       <div class="bg-slate-800/50 p-4 border-b border-slate-800 flex justify-between items-center">
         <h2 class="font-bold text-white">AI Signal & SMC Analysis</h2>
@@ -146,80 +213,23 @@
       </div>
     </div>
 
-    <!-- الرسم البياني والسعر المباشر -->
     <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4">
       <div class="flex justify-between items-center mb-2">
         <h3 class="font-bold text-white">📈 Candlestick Chart (H1)</h3>
         <div id="livePriceDisplay" class="text-sm font-mono text-emerald-400">--</div>
       </div>
       <div id="chartContainer" class="h-[280px] w-full"></div>
-      <div class="text-xs text-slate-400 mt-2 text-center">* Real-time chart updates when data loaded</div>
+      <div class="text-xs text-slate-400 mt-2 text-center">* Chart updates when data loaded</div>
     </div>
   </section>
 </main>
-<!-- قسم إدارة المخاطر -->
-<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-  <h3 class="text-lg font-bold text-white mb-3">💰 Risk Management</h3>
-  <div class="space-y-2">
-    <div>
-      <label class="block text-xs font-bold text-slate-500">Account Balance ($)</label>
-      <input type="number" id="accountBalance" value="10000" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
-    </div>
-    <div>
-      <label class="block text-xs font-bold text-slate-500">Risk per Trade (%)</label>
-      <input type="number" id="riskPercent" value="2" step="0.5" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
-    </div>
-    <div>
-      <label class="block text-xs font-bold text-slate-500">Stop Loss (pips/points)</label>
-      <input type="number" id="stopLossPoints" value="100" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
-    </div>
-    <button id="calcPositionBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-lg text-sm font-bold">📊 Calculate Position Size</button>
-    <div id="positionResult" class="text-xs text-slate-400 text-center hidden"></div>
-  </div>
-</div>
 
-<!-- قسم الاختبار الخلفي (Backtesting) -->
-<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-  <h3 class="text-lg font-bold text-white mb-3">⏱️ Backtesting</h3>
-  <div class="flex flex-col gap-2">
-    <label class="text-xs text-slate-500">Test Period (days)</label>
-    <input type="number" id="backtestDays" value="30" class="bg-slate-950 border border-slate-700 rounded p-2 text-sm">
-    <button id="runBacktestBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm font-bold">Run Backtest</button>
-    <div id="backtestResult" class="text-xs text-slate-400 text-center hidden"></div>
-  </div>
-</div>
-
-<!-- قسم إعدادات API للأسهم والفوركس -->
-<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-  <h3 class="text-lg font-bold text-white mb-3">🔑 API Keys (Stocks/Forex)</h3>
-  <div class="space-y-2">
-    <div>
-      <label class="block text-xs text-slate-500">Alpha Vantage Key</label>
-      <input type="text" id="alphaVantageKey" placeholder="Your API key" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
-    </div>
-    <div>
-      <label class="block text-xs text-slate-500">Twelve Data Key</label>
-      <input type="text" id="twelveDataKey" placeholder="Your API key" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
-    </div>
-    <div class="text-[10px] text-slate-400">* CORS proxy may be required; use https://cors-anywhere.herokuapp.com/ as fallback.</div>
-  </div>
-</div>
-
-<!-- قسم إضافي للإحصائيات -->
-<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-  <h3 class="text-lg font-bold text-white mb-3">📊 Model Stats</h3>
-  <div id="modelStats" class="text-xs text-slate-400 space-y-1">
-    <p>Model: Not trained</p>
-    <p>Last accuracy: --</p>
-    <p>Last prediction: --</p>
-  </div>
-</div>
-<!-- تضمين ملفات JavaScript -->
-<script src="script.js"></script>
-<script src="ml.js"></script>  
-  <script src="indicators.js"></script>
+<!-- Include all scripts -->
+<script src="indicators.js"></script>
 <script src="backtest.js"></script>
-<script src="telegram.js"></script>
 <script src="risk.js"></script>
+<script src="telegram.js"></script>
+<script src="ml.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
