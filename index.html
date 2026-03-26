@@ -1,18 +1,23 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en" dir="ltr" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SelfVIP Trading - AI & ML Pro Dashboard</title>
+  <title>SelfVIP Trading - Multi-Market Pro Dashboard</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  
   <script src="https://js.puter.com/v2/"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+
   <style>
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); }
   </style>
 </head>
 
@@ -23,20 +28,15 @@
     <h1 class="text-2xl font-extrabold tracking-tight italic text-white">
       SelfVIP<span class="text-blue-500">Trading</span>
     </h1>
-    <span class="bg-purple-600/20 text-purple-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-purple-500/30">
-      ML + LLM ENGINE
+    <span class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-500/30">
+      PRO DASHBOARD + ML
     </span>
   </div>
-
   <div class="flex items-center gap-4 text-xs font-mono">
     <span class="text-emerald-400 animate-pulse flex items-center gap-2">
       <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-      SYSTEM ONLINE
+      SYSTEM ACTIVE
     </span>
-    <a href="https://t.me/selfvipTrading" target="_blank"
-       class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-xs transition-all shadow-lg">
-       Telegram
-    </a>
   </div>
 </header>
 
@@ -45,64 +45,71 @@
   <aside class="w-full lg:w-1/3 flex flex-col gap-4">
     
     <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
-      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <span>⚙️</span> Asset Configuration
-      </h3>
-      
+      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">⚙️ Settings</h3>
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Market Type</label>
-          <select id="marketType" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 transition-all">
-            <option value="crypto">Crypto (Binance)</option>
-            <option value="stocks">Stocks (Finnhub)</option>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Market</label>
+          <select id="marketType" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none">
+            <option value="crypto">Crypto</option>
           </select>
         </div>
-        
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Asset Symbol</label>
-          <input type="text" id="symbolInput" value="BTCUSDT" 
-            class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none focus:border-blue-500 uppercase transition-all" 
-            placeholder="e.g. BTCUSDT or AAPL" />
+          <input type="text" id="symbolInput" value="BTCUSDT" class="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 text-sm outline-none uppercase" />
         </div>
       </div>
     </div>
 
-    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-full">
-      <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-        <span>🧠</span> Neural Processing
-      </h3>
-      <p class="text-slate-400 text-xs mb-4">Fetch real data and run local ML training.</p>
-
-      <button onclick="executeFullPipeline()" id="pipelineBtn"
-        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white py-4 rounded-xl font-black text-sm transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)] flex items-center justify-center gap-3">
-        <span id="btnText"> Initialize ML & AI Analysis </span>
-        <div id="btnLoader" class="hidden h-5 w-5 border-4 border-t-white border-white/20 rounded-full animate-spin"></div>
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">🚀 SMC Execution</h3>
+      <button id="autoRunBtn" onclick="runFullProcess()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-black text-lg transition-all shadow-lg flex justify-center items-center gap-2">
+        <span id="autoRunText">Auto Analyze Data</span>
+        <div id="autoRunLoader" class="hidden h-5 w-5 border-4 border-t-white border-blue-800 rounded-full animate-spin"></div>
       </button>
-
-      <div class="mt-4 flex-grow flex flex-col">
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
-          System Logs
-        </label>
-        <textarea id="systemLogs" rows="10" readonly
-          class="w-full h-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-emerald-400 text-xs font-mono outline-none resize-none"
-          dir="ltr">Awaiting execution...</textarea>
+      <div id="statusIndicators" class="mt-4 space-y-2 text-xs font-mono text-slate-400">
+        <div id="statusPrice" class="flex items-center gap-2"><span>⏳</span> Waiting for Price...</div>
       </div>
     </div>
+
+    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+      <h3 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+        <span>🤖</span> ML Predictor (TensorFlow)
+      </h3>
+      <p class="text-xs text-slate-400 mb-3">
+        Train a neural network directly in your browser.
+      </p>
+      <div class="flex flex-col gap-2">
+        <label class="block text-xs font-bold text-slate-500">Number of Candles</label>
+        <input type="number" id="mlCandlesCount" value="500" min="100" max="1000" class="bg-slate-950 border border-slate-700 text-white rounded p-2 text-sm" />
+        
+        <label class="block text-xs font-bold text-slate-500">Epochs</label>
+        <input type="number" id="mlEpochs" value="10" min="5" max="50" class="bg-slate-950 border border-slate-700 text-white rounded p-2 text-sm" />
+        
+        <button id="trainModelBtn" class="mt-3 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-bold transition-all">
+          🧠 Start Training
+        </button>
+        <div id="mlStatus" class="text-xs text-slate-400 text-center mt-2 hidden">Ready</div>
+        <div id="mlResult" class="text-sm text-center font-mono mt-2 hidden p-3 bg-slate-800 rounded-lg"></div>
+      </div>
+    </div>
+
   </aside>
 
-  <section class="w-full lg:w-2/3">
-    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl h-full flex flex-col overflow-hidden relative">
-      <div class="bg-slate-800/50 p-4 border-b border-slate-800 flex justify-between items-center z-10">
-        <h2 class="font-bold text-white">Hybrid Analysis Result</h2>
-        <span class="text-xs text-slate-400 font-mono" id="timestamp">Status: Standby</span>
+  <section class="w-full lg:w-2/3 flex flex-col gap-4">
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-4 h-[300px] flex flex-col">
+      <h2 class="font-bold text-white mb-2 text-sm">Live Chart</h2>
+      <div id="chartContainer" class="flex-grow w-full h-full relative">
+        <div id="chartPlaceholder" class="absolute inset-0 flex items-center justify-center text-slate-600 italic">Chart will appear here</div>
       </div>
+    </div>
 
-      <div id="outputDashboard" class="p-6 overflow-y-auto flex-grow bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950 min-h-[500px] z-10 relative">
-        <div class="flex flex-col items-center justify-center h-full text-slate-600 italic gap-4">
-          <svg class="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-          </svg>
-          <p>Run the pipeline to train the model and generate SMC insights.</p>
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl flex-grow flex flex-col overflow-hidden min-h-[400px]">
+      <div class="bg-slate-800/50 p-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 class="font-bold text-white">AI SMC Analysis</h2>
+      </div>
+      <div id="outputDashboard" class="p-6 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950 flex-grow">
+        <div class="flex flex-col items-center justify-center h-full text-slate-600 italic">
+          <p>Click "Auto Analyze Data" to start SMC analysis.</p>
         </div>
       </div>
     </div>
@@ -111,256 +118,184 @@
 </main>
 
 <script>
-  // --- CONFIGURATION ---
-  const FINNHUB_KEY = "D70f8t1r01qtb4rai6sgd70f8t1r01qtb4rai6t0"; 
-  let globalCandles = [];
-  let mlPredictionContext = "";
+  // ==========================================
+  // الجزء الأول: التحليل العادي والرسوم البيانية
+  // ==========================================
+  let appState = { symbol: "", market: "crypto", livePrice: 0, candles: [] };
+  let chart = null, candlestickSeries = null;
 
-  // --- UTILS ---
-  function log(msg) {
-    const logger = document.getElementById("systemLogs");
-    logger.value += `\n[${new Date().toLocaleTimeString()}] ${msg}`;
-    logger.scrollTop = logger.scrollHeight;
+  function updateStatus(id, text, state = "loading") {
+    const el = document.getElementById(id);
+    if(state === "loading") el.innerHTML = `<span class="animate-spin inline-block">⏳</span> ${text}`;
+    if(state === "done") el.innerHTML = `<span class="text-emerald-500">✅</span> ${text}`;
   }
 
-  function escapeHtml(str) {
-    return String(str ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
-  }
+  function renderChart(data) {
+    const container = document.getElementById('chartContainer');
+    document.getElementById('chartPlaceholder').style.display = 'none';
 
-  function extractJson(text) {
-    try {
-      return JSON.parse(text);
-    } catch (e) {
-      const match = String(text).trim().match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("AI did not return valid JSON format.");
-      return JSON.parse(match[0]);
-    }
-  }
-
-  // --- DATA FETCHING ---
-  async function fetchMarketData(symbol, market) {
-    log(`Fetching ${market} data for ${symbol}...`);
-    let candles = [];
-
-    if (market === "crypto") {
-      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=15m&limit=100`);
-      if (!res.ok) throw new Error("Binance API Error. Check symbol.");
-      const data = await res.json();
-      candles = data.map(c => ({
-        close: parseFloat(c[4]),
-        high: parseFloat(c[2]),
-        low: parseFloat(c[3])
-      }));
-    } else if (market === "stocks") {
-      const to = Math.floor(Date.now() / 1000);
-      const from = to - (86400 * 5); // Last 5 days
-      const res = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=15&from=${from}&to=${to}&token=${FINNHUB_KEY}`);
-      if (!res.ok) throw new Error("Finnhub API Error.");
-      const data = await res.json();
-      if (data.s !== "ok") throw new Error("No data found for this stock symbol.");
-      
-      for (let i = 0; i < data.c.length; i++) {
-        candles.push({ close: data.c[i], high: data.h[i], low: data.l[i] });
-      }
+    if (!chart) {
+      chart = LightweightCharts.createChart(container, {
+        layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#cbd5e1' },
+        grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+      });
+      candlestickSeries = chart.addCandlestickSeries({ upColor: '#10b981', downColor: '#f43f5e', borderVisible: false });
     }
     
-    log(`Successfully loaded ${candles.length} candles.`);
-    return candles;
+    const formattedData = data.map((c, i) => ({
+      time: Math.floor(Date.now() / 1000) - ((data.length - i) * 3600), 
+      open: c.open, high: c.high, low: c.low, close: c.close
+    }));
+    candlestickSeries.setData(formattedData);
+    chart.timeScale().fitContent();
   }
 
-  // --- MACHINE LEARNING (TensorFlow.js) ---
-  async function trainModel(candles) {
-    log("Initializing TensorFlow.js Neural Network...");
-    
-    // Prepare Data
-    const closes = candles.map(c => c.close);
-    const minPrice = Math.min(...closes);
-    const maxPrice = Math.max(...closes);
-    
-    // Normalize Data (0 to 1)
-    const normalized = closes.map(p => (p - minPrice) / (maxPrice - minPrice));
-
-    // Create sequences (lookback window of 10)
-    const windowSize = 10;
-    const X = [];
-    const Y = [];
-    
-    for (let i = 0; i < normalized.length - windowSize; i++) {
-      X.push(normalized.slice(i, i + windowSize));
-      Y.push(normalized[i + windowSize]);
-    }
-
-    const xs = tf.tensor2d(X);
-    const ys = tf.tensor2d(Y, [Y.length, 1]);
-
-    // Build Model
-    const model = tf.sequential();
-    model.add(tf.layers.dense({ units: 32, inputShape: [windowSize], activation: 'relu' }));
-    model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
-    model.add(tf.layers.dense({ units: 1 })); // Output layer
-
-    model.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
-
-    log("Training model... (Epochs: 50)");
-    await model.fit(xs, ys, { epochs: 50, batchSize: 8, shuffle: true });
-
-    // Predict Next Value
-    const lastWindow = normalized.slice(-windowSize);
-    const inputTensor = tf.tensor2d([lastWindow]);
-    const predictionTensor = model.predict(inputTensor);
-    const predictionNormalized = predictionTensor.dataSync()[0];
-    
-    // De-normalize
-    const predictedPrice = (predictionNormalized * (maxPrice - minPrice)) + minPrice;
-    const currentPrice = closes[closes.length - 1];
-    const trend = predictedPrice > currentPrice ? "BULLISH" : "BEARISH";
-    const confidence = Math.abs(predictedPrice - currentPrice) / currentPrice * 100;
-
-    log(`ML Prediction: ${trend} | Target: ${predictedPrice.toFixed(4)}`);
-    
-    mlPredictionContext = `
-[LOCAL MACHINE LEARNING MODEL RESULTS]
-Current Price: ${currentPrice.toFixed(4)}
-Predicted Next Close: ${predictedPrice.toFixed(4)}
-ML Trend Bias: ${trend}
-Model Confidence Score: ${confidence.toFixed(2)}%
-    `;
-    
-    // Cleanup tensors
-    xs.dispose(); ys.dispose(); inputTensor.dispose(); predictionTensor.dispose();
+  async function fetchLivePrice() {
+    updateStatus("statusPrice", "Fetching...", "loading");
+    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${appState.symbol}`);
+    const data = await res.json();
+    appState.livePrice = parseFloat(data.price).toFixed(2);
+    updateStatus("statusPrice", `Price: $${appState.livePrice}`, "done");
   }
 
-  // --- LLM AI ANALYSIS ---
-  async function runLLMAnalysis(symbol, marketDataStr) {
-    log("Sending data and ML context to LLM Engine...");
-    
-    const prompt = `
-You are a top-tier institutional trader using Smart Money Concepts (SMC).
-Analyze ${symbol} strictly based on this data.
+  async function fetchCandlesAPI() {
+    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${appState.symbol}&interval=1h&limit=50`);
+    const data = await res.json();
+    appState.candles = data.map(c => ({ open: parseFloat(c[1]), high: parseFloat(c[2]), low: parseFloat(c[3]), close: parseFloat(c[4]) }));
+    renderChart(appState.candles);
+  }
 
-Market Data Summary:
-${marketDataStr}
-
-${mlPredictionContext}
-
-INSTRUCTIONS:
-Combine the ML Trend Bias with your SMC analysis.
-Return ONLY raw JSON, no markdown formatting.
-
-Format:
-{
-  "bias": { "status": "bullish / bearish", "strength": "string", "reason": "string" },
-  "ml_synergy": "Explain how the ML prediction aligns or conflicts with SMC order blocks",
-  "order_blocks": [ { "zone": "price", "type": "demand/supply", "strength": "string", "reason": "string" } ],
-  "trade_plan": { "entry": "string", "tp": "string", "sl": "string" }
-}`;
-
+  async function analyzeWithAI() {
+    const prompt = `Analyze ${appState.symbol} at ${appState.livePrice}. Return ONLY strict JSON: {"bias": {"status": "bullish or bearish", "reason": "text"}, "trade_plan": {"entry": "price", "tp": "price", "sl": "price"}}`;
     const response = await puter.ai.chat(prompt);
-    const text = typeof response === "string" ? response : (response?.message?.content || response?.text);
-    return extractJson(text);
+    const aiText = typeof response === "string" ? response : response?.message?.content || JSON.stringify(response);
+    const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+    const aiData = JSON.parse(jsonMatch[0]);
+
+    document.getElementById("outputDashboard").innerHTML = `
+      <div class="p-4 bg-slate-800 rounded-xl border border-slate-700">
+        <h3 class="text-sm font-bold text-slate-400">Directional Bias</h3>
+        <p class="text-xl font-bold ${aiData.bias.status.includes('bull') ? 'text-emerald-400' : 'text-rose-400'} uppercase">${aiData.bias.status}</p>
+        <p class="text-sm mt-1">${aiData.bias.reason}</p>
+      </div>
+      <div class="mt-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
+        <h3 class="text-sm font-bold text-slate-400">Trade Plan</h3>
+        <p>Entry: ${aiData.trade_plan.entry}</p>
+        <p>TP: ${aiData.trade_plan.tp}</p>
+        <p>SL: ${aiData.trade_plan.sl}</p>
+      </div>`;
   }
 
-  // --- MAIN PIPELINE ---
-  async function executeFullPipeline() {
-    const symbol = document.getElementById("symbolInput").value.toUpperCase();
-    const market = document.getElementById("marketType").value;
-    const btn = document.getElementById("pipelineBtn");
-    const loader = document.getElementById("btnLoader");
-    const dashboard = document.getElementById("outputDashboard");
-
-    if (!symbol) return alert("Enter a symbol.");
-
-    document.getElementById("systemLogs").value = "Starting execution pipeline...";
-    btn.disabled = true;
-    loader.classList.remove("hidden");
-    
-    dashboard.innerHTML = `
-      <div class="flex flex-col items-center justify-center h-full text-purple-400 animate-pulse">
-        <div class="h-12 w-12 border-4 border-t-purple-500 border-slate-800 rounded-full animate-spin mb-4"></div>
-        <p class="font-mono text-sm tracking-widest">TRAINING NEURAL NETWORK & ANALYZING...</p>
-      </div>`;
-
+  async function runFullProcess() {
+    appState.symbol = document.getElementById("symbolInput").value.toUpperCase();
+    if (!appState.symbol) return alert("Please enter a symbol");
     try {
-      // 1. Fetch Real Data
-      const candles = await fetchMarketData(symbol, market);
-      if(candles.length < 20) throw new Error("Not enough data to train the model.");
-      
-      // Prepare text summary for LLM
-      const lastCandles = candles.slice(-5).map(c => `H:${c.high.toFixed(2)} L:${c.low.toFixed(2)} C:${c.close.toFixed(2)}`).join(" | ");
-
-      // 2. Train Model & Predict
-      await trainModel(candles);
-
-      // 3. Run AI LLM with ML Context
-      const aiData = await runLLMAnalysis(symbol, lastCandles);
-
-      // 4. Render Interface
-      renderDashboard(aiData, symbol);
-      log("Pipeline completed successfully.");
-      document.getElementById("timestamp").innerText = `Last update: ${new Date().toLocaleTimeString()}`;
-
-    } catch (e) {
-      log(`ERROR: ${e.message}`);
-      dashboard.innerHTML = `
-        <div class="p-6 bg-red-900/30 border border-red-500/50 rounded-xl text-red-300">
-          <h4 class="font-bold mb-2">Pipeline Failed</h4>
-          <p class="text-sm font-mono">${escapeHtml(e.message)}</p>
-        </div>`;
-    } finally {
-      btn.disabled = false;
-      loader.classList.add("hidden");
+      await fetchLivePrice();
+      await fetchCandlesAPI();
+      await analyzeWithAI();
+    } catch (error) {
+      document.getElementById("outputDashboard").innerHTML = `<div class="text-rose-500">${error.message}</div>`;
     }
   }
 
-  function renderDashboard(data, symbol) {
-    const dashboard = document.getElementById("outputDashboard");
-    const biasStatus = data.bias?.status || "Neutral";
-    const biasColor = biasStatus.toLowerCase().includes("bullish") ? "from-emerald-500 to-cyan-400" : "from-rose-500 to-orange-400";
 
-    const obsHtml = (data.order_blocks || []).map(ob => {
-      const isDemand = String(ob.type).toLowerCase().includes("demand");
-      const outerClass = isDemand ? "bg-emerald-900/20 border-emerald-500/30 text-emerald-100" : "bg-rose-900/20 border-rose-500/30 text-rose-100";
-      return `
-        <div class="p-4 rounded-xl border ${outerClass} shadow-md hover:scale-[1.02] transition-transform">
-          <span class="text-[10px] font-bold uppercase tracking-widest opacity-70">${escapeHtml(ob.type)}</span>
-          <h4 class="text-xl font-black font-mono my-1">${escapeHtml(ob.zone)}</h4>
-          <p class="text-xs opacity-90">${escapeHtml(ob.reason)}</p>
-        </div>`;
-    }).join("");
+  // ==========================================
+  // الجزء الثاني: التعلم الآلي (TensorFlow.js)
+  // ==========================================
+  let mlModel = null;
 
-    dashboard.innerHTML = `
-      <div class="space-y-6 flex flex-col h-full animate-fade-in">
-        <h2 class="text-3xl font-black text-white tracking-widest uppercase text-center">${escapeHtml(symbol)}</h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl relative overflow-hidden">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">SMC Structure Bias</h3>
-            <div class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${biasColor}">${escapeHtml(biasStatus)}</div>
-            <p class="text-xs text-slate-400 mt-2">${escapeHtml(data.bias?.reason)}</p>
-          </div>
-
-          <div class="bg-purple-900/20 border border-purple-500/30 p-6 rounded-2xl relative overflow-hidden">
-             <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2">ML + LLM Synergy</h3>
-             <p class="text-sm text-purple-100 leading-relaxed">${escapeHtml(data.ml_synergy)}</p>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-800 pb-2">Identified Liquidity & OBs</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${obsHtml}</div>
-        </div>
-        
-        <div class="bg-slate-800/50 border border-blue-500/30 p-5 rounded-xl">
-          <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Execution Plan</h3>
-          <div class="grid grid-cols-3 gap-4 text-center font-mono text-sm">
-            <div><span class="block text-[10px] text-slate-500 mb-1">ENTRY</span> <span class="text-white">${escapeHtml(data.trade_plan?.entry)}</span></div>
-            <div><span class="block text-[10px] text-slate-500 mb-1">TARGET</span> <span class="text-emerald-400">${escapeHtml(data.trade_plan?.tp)}</span></div>
-            <div><span class="block text-[10px] text-slate-500 mb-1">STOP LOSS</span> <span class="text-rose-400">${escapeHtml(data.trade_plan?.sl)}</span></div>
-          </div>
-        </div>
-      </div>
-    `;
+  async function fetchMLData(symbol, limit) {
+    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1h&limit=${limit}`);
+    const data = await res.json();
+    return data.map(candle => parseFloat(candle[4])); // أسعار الإغلاق فقط
   }
+
+  function normalizeData(data) {
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    return data.map(val => (val - min) / (max - min));
+  }
+
+  function createMLSequences(data, seqLength = 20) {
+    const X = [], y = [];
+    for (let i = seqLength; i < data.length; i++) {
+      X.push(data.slice(i - seqLength, i));
+      y.push(data[i] > data[i-1] ? 1 : 0); // 1 صعود، 0 هبوط
+    }
+    return { X, y, seqLength };
+  }
+
+  function buildMLModel(seqLength) {
+    const m = tf.sequential();
+    m.add(tf.layers.lstm({ units: 30, inputShape: [seqLength, 1], returnSequences: false }));
+    m.add(tf.layers.dense({ units: 1, activation: 'sigmoid' }));
+    m.compile({ optimizer: 'adam', loss: 'binaryCrossentropy', metrics: ['accuracy'] });
+    return m;
+  }
+
+  async function trainAndPredict() {
+    const symbol = document.getElementById('symbolInput').value.toUpperCase();
+    const candlesCount = parseInt(document.getElementById('mlCandlesCount').value);
+    const epochs = parseInt(document.getElementById('mlEpochs').value);
+    const seqLength = 20;
+
+    const statusDiv = document.getElementById('mlStatus');
+    const resultDiv = document.getElementById('mlResult');
+    const trainBtn = document.getElementById('trainModelBtn');
+
+    trainBtn.disabled = true;
+    statusDiv.classList.remove('hidden');
+    resultDiv.classList.add('hidden');
+    
+    try {
+      statusDiv.innerText = '1/4 Fetching data...';
+      const closes = await fetchMLData(symbol, candlesCount);
+      
+      statusDiv.innerText = '2/4 Preparing tensors...';
+      const normalized = normalizeData(closes);
+      const { X, y } = createMLSequences(normalized, seqLength);
+
+      const split = Math.floor(X.length * 0.8);
+      const trainX = tf.tensor3d(X.slice(0, split), [split, seqLength, 1]);
+      const trainY = tf.tensor2d(y.slice(0, split), [split, 1]);
+
+      statusDiv.innerText = `3/4 Training (${epochs} epochs)...`;
+      mlModel = buildMLModel(seqLength);
+
+      await mlModel.fit(trainX, trainY, {
+        epochs: epochs,
+        callbacks: {
+          onEpochEnd: (epoch, logs) => {
+            statusDiv.innerText = `Training... Epoch ${epoch+1}/${epochs} (Acc: ${(logs.acc*100).toFixed(1)}%)`;
+          }
+        }
+      });
+
+      statusDiv.innerText = '4/4 Predicting next candle...';
+      const lastSeq = normalized.slice(-seqLength);
+      const inputPred = tf.tensor3d([lastSeq], [1, seqLength, 1]);
+      const prob = (await mlModel.predict(inputPred).data())[0];
+      
+      const direction = prob > 0.5 ? 'BULLISH' : 'BEARISH';
+      const confidence = (prob > 0.5 ? prob : 1 - prob) * 100;
+
+      resultDiv.classList.remove('hidden');
+      resultDiv.innerHTML = `
+        <div class="text-slate-400 text-xs">Prediction:</div>
+        <div class="font-bold text-lg ${direction === 'BULLISH' ? 'text-emerald-400' : 'text-rose-400'}">${direction}</div>
+        <div class="text-xs">Confidence: ${confidence.toFixed(1)}%</div>
+      `;
+      statusDiv.innerText = 'Training Complete ✅';
+
+    } catch (err) {
+      statusDiv.innerText = `Error: ${err.message}`;
+    } finally {
+      trainBtn.disabled = false;
+    }
+  }
+
+  document.getElementById('trainModelBtn').addEventListener('click', trainAndPredict);
 </script>
 </body>
 </html>
