@@ -1,3 +1,15 @@
+// ========== التحقق من وجود المكتبات ==========
+if (typeof LightweightCharts === 'undefined') {
+  console.error("LightweightCharts is not loaded. Chart will not work.");
+  // عرض رسالة في مكان الرسم البياني
+  const chartContainer = document.getElementById('chartContainer');
+  if (chartContainer) {
+    chartContainer.innerHTML = '<div class="text-red-400 text-center p-4">⚠️ Chart library failed to load. Please check your internet connection and refresh.</div>';
+  }
+  // منع محاولة استخدام المكتبة لاحقًا
+  window.LightweightCharts = null;
+}
+
 // ========== المتغيرات العامة ==========
 window.appData = {
   currentMarketData: null,
@@ -152,6 +164,16 @@ Analyze order blocks, liquidity sweeps, BOS/CHoCH, bias, invalidation, and educa
 }
 
 function updateChartWithData(candles) {
+  // التحقق من وجود المكتبة
+  if (typeof LightweightCharts === 'undefined' || LightweightCharts === null) {
+    console.warn("Cannot update chart: LightweightCharts not loaded");
+    const container = document.getElementById('chartContainer');
+    if (container && !container.innerHTML.includes('Chart library failed')) {
+      container.innerHTML = '<div class="text-red-400 text-center p-4">⚠️ Chart library missing. Cannot display chart.</div>';
+    }
+    return;
+  }
+
   const container = document.getElementById("chartContainer");
   if (!window.appData.chart) {
     window.appData.chart = LightweightCharts.createChart(container, {
