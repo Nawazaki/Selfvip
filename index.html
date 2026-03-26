@@ -157,7 +157,63 @@
     </div>
   </section>
 </main>
+<!-- قسم إدارة المخاطر -->
+<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+  <h3 class="text-lg font-bold text-white mb-3">💰 Risk Management</h3>
+  <div class="space-y-2">
+    <div>
+      <label class="block text-xs font-bold text-slate-500">Account Balance ($)</label>
+      <input type="number" id="accountBalance" value="10000" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-500">Risk per Trade (%)</label>
+      <input type="number" id="riskPercent" value="2" step="0.5" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-500">Stop Loss (pips/points)</label>
+      <input type="number" id="stopLossPoints" value="100" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+    </div>
+    <button id="calcPositionBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-lg text-sm font-bold">📊 Calculate Position Size</button>
+    <div id="positionResult" class="text-xs text-slate-400 text-center hidden"></div>
+  </div>
+</div>
 
+<!-- قسم الاختبار الخلفي (Backtesting) -->
+<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+  <h3 class="text-lg font-bold text-white mb-3">⏱️ Backtesting</h3>
+  <div class="flex flex-col gap-2">
+    <label class="text-xs text-slate-500">Test Period (days)</label>
+    <input type="number" id="backtestDays" value="30" class="bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+    <button id="runBacktestBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm font-bold">Run Backtest</button>
+    <div id="backtestResult" class="text-xs text-slate-400 text-center hidden"></div>
+  </div>
+</div>
+
+<!-- قسم إعدادات API للأسهم والفوركس -->
+<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+  <h3 class="text-lg font-bold text-white mb-3">🔑 API Keys (Stocks/Forex)</h3>
+  <div class="space-y-2">
+    <div>
+      <label class="block text-xs text-slate-500">Alpha Vantage Key</label>
+      <input type="text" id="alphaVantageKey" placeholder="Your API key" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+    </div>
+    <div>
+      <label class="block text-xs text-slate-500">Twelve Data Key</label>
+      <input type="text" id="twelveDataKey" placeholder="Your API key" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+    </div>
+    <div class="text-[10px] text-slate-400">* CORS proxy may be required; use https://cors-anywhere.herokuapp.com/ as fallback.</div>
+  </div>
+</div>
+
+<!-- قسم إضافي للإحصائيات -->
+<div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+  <h3 class="text-lg font-bold text-white mb-3">📊 Model Stats</h3>
+  <div id="modelStats" class="text-xs text-slate-400 space-y-1">
+    <p>Model: Not trained</p>
+    <p>Last accuracy: --</p>
+    <p>Last prediction: --</p>
+  </div>
+</div>
 <!-- تضمين ملفات JavaScript -->
 <script src="script.js"></script>
 <script src="ml.js"></script>
