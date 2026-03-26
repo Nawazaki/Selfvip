@@ -1,0 +1,13 @@
+project/
+│
+├── index.html          # Main HTML structure
+├── style.css           # Custom styles
+├── script.js           # Core UI logic, data fetching, chart, AI analysis, WebSocket
+├── ml.js               # Machine learning model (CNN-LSTM) with multi-timeframe features and indicators
+├── indicators.js       # Technical indicators (RSI, MACD)
+├── backtest.js         # Backtesting functionality
+├── risk.js             # Position sizing and risk management
+├── telegram.js         # Telegram alert integration (requires proxy)
+└── netlify/            # (optional) Serverless function for Telegram
+    └── functions/
+        └── telegram.js # Netlify function to forward messages to Telegram
