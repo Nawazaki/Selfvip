@@ -1,34 +1,11 @@
-// ========== التحقق من وجود المكتبات ==========
-if (typeof LightweightCharts === 'undefined') {
-  console.error("LightweightCharts is not loaded. Chart will not work.");
-  // عرض رسالة في مكان الرسم البياني
-  const chartContainer = document.getElementById('chartContainer');
-  if (chartContainer) {
-    chartContainer.innerHTML = '<div class="text-red-400 text-center p-4">⚠️ Chart library failed to load. Please check your internet connection and refresh.</div>';
-  }
-  // منع محاولة استخدام المكتبة لاحقًا
-  window.LightweightCharts = null;
-}
-
-// ========== المتغيرات العامة ==========
-window.appData = {
-  currentMarketData: null,
-  currentCandles: { h1: [] },
-  currentSymbol: "BTCUSDT",
-  currentMarket: "crypto",
-  ws: null,
-  chart: null,
-  candleSeries: null
-};
-
-// ========== دوال مساعدة ==========
+// ========== Helper Functions ==========
 function escapeHtml(str) {
   return String(str ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 function nowStamp() {
   const now = new Date();
@@ -49,17 +26,33 @@ function extractJson(text, retries = 2) {
   throw new Error("AI did not return valid JSON.");
 }
 
-// ========== جلب البيانات من Binance ==========
+// ========== Data Fetching (Unified) ==========
 async function fetchLivePriceOnly(market, symbol) {
   if (market === "crypto") {
     const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
     if (!res.ok) throw new Error(`Binance error: ${symbol} not found.`);
     const data = await res.json();
     return parseFloat(data.price).toFixed(2);
+  } else if (market === "stocks") {
+    const apiKey = document.getElementById('alphaVantageKey').value.trim();
+    if (!apiKey) throw new Error('Alpha Vantage API key required');
+    const proxy = 'https://cors-anywhere.herokuapp.com/';
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
+    const res = await fetch(proxy + url);
+    const data = await res.json();
+    if (!data['Global Quote'] || !data['Global Quote']['05. price']) throw new Error('Symbol not found or API limit');
+    return parseFloat(data['Global Quote']['05. price']).toFixed(2);
+  } else if (market === "forex") {
+    const apiKey = document.getElementById('twelveDataKey').value.trim();
+    if (!apiKey) throw new Error('Twelve Data API key required');
+    const proxy = 'https://cors-anywhere.herokuapp.com/';
+    const url = `https://api.twelvedata.com/price?symbol=${symbol}&apikey=${apiKey}`;
+    const res = await fetch(proxy + url);
+    const data = await res.json();
+    if (!data.price) throw new Error('Symbol not found or API limit');
+    return parseFloat(data.price).toFixed(2);
   } else {
-    // بيانات وهمية للأسهم/الفوركس
-    console.warn(`Using mock data for ${market}.`);
-    return (Math.random() * 500 + 50).toFixed(2);
+    throw new Error('Unsupported market type');
   }
 }
 
@@ -77,7 +70,9 @@ async function fetchCandlesMultiTF(market, symbol, limit) {
     const [m15, h1, h4, d1] = await Promise.all(requests);
     return { m15, h1, h4, d1 };
   } else {
-    // بيانات وهمية
+    // For stocks/forex, we could fetch from Alpha Vantage or Twelve Data.
+    // For simplicity, return mock data with warning.
+    console.warn(`Mock candles for ${market}`);
     const generateMock = () => Array.from({ length: limit }, () => ({
       open: Math.random() * 200 + 100,
       high: Math.random() * 210 + 100,
@@ -163,17 +158,12 @@ Analyze order blocks, liquidity sweeps, BOS/CHoCH, bias, invalidation, and educa
   }
 }
 
+// ========== Chart ==========
 function updateChartWithData(candles) {
-  // التحقق من وجود المكتبة
   if (typeof LightweightCharts === 'undefined' || LightweightCharts === null) {
-    console.warn("Cannot update chart: LightweightCharts not loaded");
-    const container = document.getElementById('chartContainer');
-    if (container && !container.innerHTML.includes('Chart library failed')) {
-      container.innerHTML = '<div class="text-red-400 text-center p-4">⚠️ Chart library missing. Cannot display chart.</div>';
-    }
+    console.warn("LightweightCharts not loaded");
     return;
   }
-
   const container = document.getElementById("chartContainer");
   if (!window.appData.chart) {
     window.appData.chart = LightweightCharts.createChart(container, {
@@ -195,14 +185,13 @@ function updateChartWithData(candles) {
   window.appData.chart.timeScale().fitContent();
 }
 
-// ========== AI Analysis ==========
+// ========== AI Analysis (Puter) ==========
 async function callAIModel(model, prompt) {
   if (model === "puter") {
     const response = await puter.ai.chat(prompt);
     const text = typeof response === "string" ? response : (response?.message?.content || response?.text || JSON.stringify(response));
     return text;
   } else {
-    // محاكاة لنماذج أخرى (يمكن استبدالها بطلب حقيقي إلى خادم وسيط)
     console.warn(`Using simulation for ${model}. Implement proxy for production.`);
     const fallback = await puter.ai.chat(prompt);
     return (typeof fallback === "string" ? fallback : (fallback?.message?.content || JSON.stringify(fallback))) +
@@ -342,6 +331,17 @@ async function exportAsImage() {
     link.click();
   } catch (e) { alert("Image export failed: " + e.message); }
 }
+
+// ========== Global App State ==========
+window.appData = {
+  currentMarketData: null,
+  currentCandles: { h1: [] },
+  currentSymbol: "BTCUSDT",
+  currentMarket: "crypto",
+  ws: null,
+  chart: null,
+  candleSeries: null
+};
 
 // ========== Event Listeners ==========
 document.addEventListener("DOMContentLoaded", () => {
